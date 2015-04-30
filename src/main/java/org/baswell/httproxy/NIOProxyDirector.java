@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.nio.channels.SocketChannel;
 
 /**
- * A ProxyDirector for non-blocking IO. All implementations of this interface <strong>must</strong> be thread-safe.
+ * A ProxyDirector for non-blocking IO. All implementations of this interface <strong>must be thread-safe</strong>.
  */
 public interface NIOProxyDirector extends ProxyDirector
 {

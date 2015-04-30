@@ -19,6 +19,15 @@ public class ServerSocketAcceptLoop
     this.threadPoolDispatcher = new ThreadPoolDispatcher(proxyDirector, executorService);
   }
 
+  /**
+   * Accepts incoming requests on {@code serverSocket} and dispatches using the {@code ExecutorService} passed in from the constructor. This method
+   * blocks the calling thread until {@link #stop()} is called by another thread or the given {@code ServerSocket} is no longer bound.
+   *
+   * @param serverSocket The server socket to accept incoming client requests on. This socket must be bound before calling this method.
+   * @throws NotYetBoundException If the given {@code ServerSocket} is not already bound.
+   * @throws SecurityException If a security manager exists and its checkAccept method doesn't allow the operation.
+   * @throws IOException If an I/O error occurs when waiting for a connection.
+   */
   public void start(ServerSocket serverSocket) throws NotYetBoundException, SecurityException, IOException
   {
     try

@@ -5,7 +5,7 @@ import java.net.Socket;
 
 
 /**
- * A ProxyDirector for blocking IO. All implementations of this interface <strong>must</strong> be thread-safe.
+ * A ProxyDirector for blocking IO. All implementations of this interface <strong>must be thread-safe</strong>.
  */
 public interface IOProxyDirector extends ProxyDirector
 {

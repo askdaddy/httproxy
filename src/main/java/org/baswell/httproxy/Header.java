@@ -1,5 +1,8 @@
 package org.baswell.httproxy;
 
+/**
+ * An HTTP header.
+ */
 public class Header
 {
   public final String name;

@@ -4,8 +4,16 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.channels.SocketChannel;
 
+/**
+ * A simple NIOProxyDirector that proxies to a single server and prints out proxy events.
+ */
 public class SimpleNIOProxyDirector extends SimpleProxyDirector implements NIOProxyDirector
 {
+  /**
+   * @see #getMaxWriteAttempts()
+   */
+  public int maxWriteAttempts = 5;
+
   public SimpleNIOProxyDirector(String proxiedHost, int proxiedPort)
   {
     super(proxiedHost, proxiedPort);
@@ -14,7 +22,7 @@ public class SimpleNIOProxyDirector extends SimpleProxyDirector implements NIOPr
   @Override
   public int getMaxWriteAttempts()
   {
-    return 5;
+    return maxWriteAttempts;
   }
 
   @Override

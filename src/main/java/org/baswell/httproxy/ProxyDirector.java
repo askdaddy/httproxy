@@ -4,7 +4,8 @@ import java.io.IOException;
 import java.util.List;
 
 /**
- * Base interface for receiving proxy events. All implementations of this interface <strong>must</strong> be thread-safe.
+ * Base interface for receiving proxy events and manipulating request & response headers. All implementations of this
+ * interface <strong>must be thread-safe</strong>.
  */
 public interface ProxyDirector
 {

@@ -3,8 +3,16 @@ package org.baswell.httproxy;
 import java.io.IOException;
 import java.util.List;
 
+/**
+ * A simple ProxyDirector that proxies to a single server and prints out proxy events.
+ */
 abstract public class SimpleProxyDirector implements ProxyDirector
 {
+  /**
+   * @see #getBufferSize()
+   */
+  public int bufferSize = 1024 * 16;
+
   protected final String proxiedHost;
 
   protected final int proxiedPort;
@@ -18,7 +26,7 @@ abstract public class SimpleProxyDirector implements ProxyDirector
   @Override
   public int getBufferSize()
   {
-    return 1024 * 16;
+    return bufferSize;
   }
 
   @Override
@@ -48,7 +56,7 @@ abstract public class SimpleProxyDirector implements ProxyDirector
   @Override
   public void onExchangeComplete(ProxiedRequest request, ProxiedResponse response)
   {
-    System.out.println("Exchange complete: " + request.path());
+    System.out.println(request.path() + " - " + (request.startedAt() - response.endedAt()));
   }
 
   @Override
@@ -67,13 +75,11 @@ abstract public class SimpleProxyDirector implements ProxyDirector
   public void onPrematureRequestClosed(ProxiedRequest request, IOException e)
   {
     System.err.println("Premature request closed for request: " + request.path());
-    e.printStackTrace();
   }
 
   @Override
   public void onPrematureResponseClosed(ProxiedRequest request, ProxiedResponse response, IOException e)
   {
     System.err.println("Premature response closed for request: " + request.path());
-    e.printStackTrace();
   }
 }

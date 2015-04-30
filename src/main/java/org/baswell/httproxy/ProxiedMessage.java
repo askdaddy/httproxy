@@ -463,9 +463,6 @@ abstract class ProxiedMessage implements ProxiedRequest, ProxiedResponse
     contentLength = null;
     contentRead = 0;
     chunkedTerminatorState = null;
-
-    // readBuffer.clear();
-    // readBuffer.compact();
   }
 
   protected static boolean lineHasContent(byte[] line)

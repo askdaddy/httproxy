@@ -6,7 +6,7 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 
 /**
- *
+ * Accepts and dispatches incoming requests on the given ServerSocketChannel.
  */
 public class ServerSocketChannelAcceptLoop
 {
@@ -16,24 +16,35 @@ public class ServerSocketChannelAcceptLoop
 
   private ServerSocketChannel serverSocketChannel;
 
+  /**
+   * Uses {@code Runtime.getRuntime().availableProcessors()} for the number of selector threads (in most circumstances
+   * this will be the best option).
+   *
+   * @param proxyDirector Must be non-null.
+   */
   public ServerSocketChannelAcceptLoop(NIOProxyDirector proxyDirector)
   {
     this(proxyDirector, Runtime.getRuntime().availableProcessors());
   }
 
+  /**
+   *
+   * @param proxyDirector Must be non-null.
+   * @param numSelectorThreads The number of selector threads. Requests will be evenly distributed upon each thread.
+   */
   public ServerSocketChannelAcceptLoop(NIOProxyDirector proxyDirector, int numSelectorThreads)
   {
     this.selectorDispatcher = new SelectorDispatcher(proxyDirector, numSelectorThreads);
   }
 
   /**
-   * Accepts and dispatches incoming requests on the given ServerSocketChannel. This method blocks the calling thread until
-   * {@link #stop()} is called by another thread or the given ServerSocketChannel is no longer bound.
+   * Accepts incoming requests on {@code serverSocketChannel} and dispatches the request to one of the selector threads. This method
+   * blocks the calling thread until {@link #stop()} is called by another thread or the given {@code ServerSocketChannel} is no longer bound.
    *
    * @param serverSocketChannel The channel to accept incoming client requests on. The channel must be bound before calling this method.
    * @throws NotYetBoundException If the given ServerSocketChannel is not already bound.
-   * @throws SecurityException If the security manager will not allow
-   * @throws IOException
+   * @throws SecurityException If a security manager exists and its checkAccept method doesn't allow the operation.
+   * @throws IOException If an I/O error occurs when waiting for a connection.
    */
   public void start(ServerSocketChannel serverSocketChannel) throws NotYetBoundException, SecurityException, IOException
   {
@@ -70,6 +81,10 @@ public class ServerSocketChannelAcceptLoop
     }
   }
 
+  /**
+   * Stops the accept loop. The thread blocked on {@link #start(java.nio.channels.ServerSocketChannel)} will be released. No new
+   * incoming connections will be made but sockets that have already been accepted will gracefully finish up.
+   */
   public void stop()
   {
     started = false;
