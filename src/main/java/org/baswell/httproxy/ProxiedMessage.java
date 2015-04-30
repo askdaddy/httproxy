@@ -85,6 +85,12 @@ abstract class ProxiedMessage implements ProxiedRequest, ProxiedResponse
   }
 
   @Override
+  public String method()
+  {
+    return method;
+  }
+
+  @Override
   public String path()
   {
     return path;
@@ -149,8 +155,16 @@ abstract class ProxiedMessage implements ProxiedRequest, ProxiedResponse
           break;
 
         case DONE:
-          endedAt = System.currentTimeMillis();
           break READ_STATE_LOOP;
+      }
+    }
+
+    if (readState == ReadState.DONE)
+    {
+      endedAt = System.currentTimeMillis();
+      if (!request)
+      {
+        proxyDirector.onExchangeComplete(proxiedRequest(), proxiedResponse());
       }
     }
 
