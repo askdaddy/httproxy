@@ -11,5 +11,5 @@ public class HttpResponse
 
   public Map<String, String> headers = new HashMap<String, String>();
 
-  public String content;
+  public byte[] content;
 }

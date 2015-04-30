@@ -1,40 +1,38 @@
 package org.baswell.httproxy;
 
-import com.sun.net.httpserver.HttpContext;
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
-
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.ServerSocket;
+import java.net.InetSocketAddress;
+import java.nio.channels.ServerSocketChannel;
 import java.util.Arrays;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
 
-public class StreamTests extends ProxyTests
+public class ChannelTests extends ProxyTests
 {
-  static TestIOProxyDirector proxyDirector = new TestIOProxyDirector();
+  static TestNIOProxyDirector proxyDirector = new TestNIOProxyDirector();
 
-  static ServerSocket serverSocket;
+  static ServerSocketChannel serverSocket;
 
-  static ServerSocketAcceptLoop socketAcceptLoop;
+  static ServerSocketChannelAcceptLoop socketAcceptLoop;
+
 
   @BeforeClass
   public static void beforeAllTests() throws Exception
   {
     startServer();
 
-    serverSocket = new ServerSocket(8081);
-    socketAcceptLoop = new ServerSocketAcceptLoop(proxyDirector, new ThreadPoolExecutor(10, 100, 10, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>()));
+    serverSocket = ServerSocketChannel.open();
+    serverSocket.socket().bind(new InetSocketAddress(8081));
+
+    socketAcceptLoop = new ServerSocketChannelAcceptLoop(proxyDirector);
     Thread acceptThread = new Thread(new Runnable()
     {
       @Override

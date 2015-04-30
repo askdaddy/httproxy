@@ -7,6 +7,7 @@ import com.sun.net.httpserver.HttpServer;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
 import java.net.URL;
@@ -75,7 +76,7 @@ abstract public class ProxyTests
     return response;
   }
 
-  static String getContent(InputStream inputStream) throws IOException
+  static byte[] getContent(InputStream inputStream) throws IOException
   {
     ByteArrayOutputStream bytesOut = new ByteArrayOutputStream();
     byte[] buffer = new byte[1024];
@@ -86,7 +87,22 @@ abstract public class ProxyTests
       bytesOut.write(buffer, 0, read);
     }
 
-    return new String(bytesOut.toByteArray());
+    return bytesOut.toByteArray();
+  }
+
+  static void stream(InputStream inputStream, OutputStream outputStream) throws IOException
+  {
+    byte[] buffer = new byte[1024 * 1024];
+    int read;
+
+    while ((read = inputStream.read(buffer)) != -1)
+    {
+      outputStream.write(buffer, 0, read);
+    }
+
+    outputStream.flush();
+    outputStream.close();
+    inputStream.close();
   }
 
 
