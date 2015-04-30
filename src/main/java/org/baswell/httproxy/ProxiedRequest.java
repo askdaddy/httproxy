@@ -8,6 +8,8 @@ public interface ProxiedRequest
 
   String host();
 
+  String method();
+
   String path();
 
   Object attachment();
