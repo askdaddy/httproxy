@@ -30,7 +30,7 @@ public class ChannelTests extends ProxyTests
     startServer();
 
     serverSocket = ServerSocketChannel.open();
-    serverSocket.socket().bind(new InetSocketAddress(8081));
+    serverSocket.socket().bind(new InetSocketAddress(9095));
 
     socketAcceptLoop = new ServerSocketChannelAcceptLoop(proxyDirector);
     Thread acceptThread = new Thread(new Runnable()
@@ -91,7 +91,7 @@ public class ChannelTests extends ProxyTests
     assertEquals("HELLO WORLD!", new String(response.content));
 
     assertEquals("/test", proxyDirector.requestPath);
-    assertEquals("localhost:8081", proxyDirector.host);
+    assertEquals("localhost:9095", proxyDirector.host);
     assertTrue(proxyDirector.requestHeaders.containsKey("One"));
     assertEquals("Two", proxyDirector.requestHeaders.get("One"));
     assertEquals(200, proxyDirector.responseCode);

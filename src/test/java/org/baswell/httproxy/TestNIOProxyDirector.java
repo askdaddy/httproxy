@@ -8,7 +8,7 @@ public class TestNIOProxyDirector extends TestProxyDirector implements NIOProxyD
 {
   public String serverHost = "localhost";
 
-  public int serverPort = 8080;
+  public int serverPort = 9096;
 
   public int maxWriteAttempts = 5;
 

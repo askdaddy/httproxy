@@ -7,7 +7,7 @@ public class TestIOProxyDirector extends TestProxyDirector implements IOProxyDir
 {
   public String serverHost = "localhost";
 
-  public int serverPort = 8080;
+  public int serverPort = 9096;
 
   public int sleepSecondsOnReadWait = 1;
 

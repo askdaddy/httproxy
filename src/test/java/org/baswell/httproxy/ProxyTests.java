@@ -22,7 +22,7 @@ abstract public class ProxyTests
 
   public static void startServer() throws Exception
   {
-    HttpServer server = HttpServer.create(new InetSocketAddress(8080), 0);
+    server = HttpServer.create(new InetSocketAddress(9096), 0);
     server.createContext("/test", new HttpHandler()
     {
       @Override

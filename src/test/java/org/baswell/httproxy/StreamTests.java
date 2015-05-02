@@ -33,7 +33,7 @@ public class StreamTests extends ProxyTests
   {
     startServer();
 
-    serverSocket = new ServerSocket(8081);
+    serverSocket = new ServerSocket(9095);
     socketAcceptLoop = new ServerSocketAcceptLoop(proxyDirector, new ThreadPoolExecutor(10, 100, 10, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>()));
     Thread acceptThread = new Thread(new Runnable()
     {
@@ -93,7 +93,7 @@ public class StreamTests extends ProxyTests
     assertEquals("HELLO WORLD!", new String(response.content));
 
     assertEquals("/test", proxyDirector.requestPath);
-    assertEquals("localhost:8081", proxyDirector.host);
+    assertEquals("localhost:9095", proxyDirector.host);
     assertTrue(proxyDirector.requestHeaders.containsKey("One"));
     assertEquals("Two", proxyDirector.requestHeaders.get("One"));
     assertEquals(200, proxyDirector.responseCode);
