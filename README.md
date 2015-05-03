@@ -50,7 +50,10 @@ NIOProxyDirector proxyDirector = new MyNIOProxyDirector();
 ServerSocketChannelAcceptLoop acceptLoop = new ServerSocketChannelAcceptLoop(proxyDirector);
 ServerSocketChannel serverSocketChannel = ServerSocketChannel.open();
 serverSocketChannel.socket().bind(new InetSocketAddress(8080));
-acceptLoop.start(serverSocketChannel); // blocks until acceptLoop.stop() is called from another thread or the server socket channel throws an IOException
+
+// blocks until acceptLoop.stop() is called from another thread or
+// the server socket channel throws an IOException
+acceptLoop.start(serverSocketChannel);
 ```
 ### Blocking IO
 For blocking IO use <a href="http://baswerc.github.io/httproxy/javadoc/org/baswell/httproxy/ServerSocketAcceptLoop.html">ServerSocketAcceptLoop</a>. You must implement
@@ -62,5 +65,7 @@ IOProxyDirector proxyDirector = new MyIOProxyDirector();
 ThreadPoolExecutor threadPool = new ThreadPoolExecutor(250, 2000, 25, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
 ServerSocket serverSocket = new ServerSocket(8080);
 ServerSocketAcceptLoop acceptLoop = new ServerSocketAcceptLoop(proxyDirector, threadPool);
-acceptLoop.start(serverSocket); // blocks until acceptLoop.stop() is called from another thread or the server socket  throws an IOException
+
+// blocks until acceptLoop.stop() is called from another thread or the server socket throws an IOException
+acceptLoop.start(serverSocket);
 ```
