@@ -1,8 +1,100 @@
 apply plugin: 'java'
+apply plugin: 'maven'
+apply plugin: 'signing'
 
 version = 1.0
 sourceCompatibility = 1.6
 
+
+sourceCompatibility = 1.6
+
+task writeNewPom << {
+    pom {
+        project {
+            modelVersion version
+            groupId 'org.baswell'
+            artifactId 'httproxy'
+            licenses {
+                license {
+                    name 'The Apache Software License, Version 2.0'
+                    url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    distribution 'repo'
+                }
+            }
+        }
+    }.writeTo("$buildDir/newpom.xml")
+}
+
+signing {
+    sign configurations.archives
+}
+
+task javadocJar(type: Jar) {
+    classifier = 'javadoc'
+    from javadoc
+}
+
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+artifacts {
+    archives javadocJar, sourcesJar
+}
+
+install {
+    repositories.mavenInstaller {
+        pom.version = version
+        pom.groupId = 'org.baswell'
+        pom.artifactId = 'httproxy'
+    }
+}
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                authentication(userName: ossrhUsername, password: ossrhPassword)
+            }
+
+            snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+                authentication(userName: ossrhUsername, password: ossrhPassword)
+            }
+
+            pom.project {
+                name 'Routes'
+                packaging 'jar'
+                description 'A low overhead Java HTTP proxy.'
+                version version
+                groupId 'org.baswell'
+                artifactId 'httproxy'
+                url 'https://github.com/baswerc/httproxy'
+
+                scm {
+                    url 'https://github.com/baswerc/httproxy.git'
+                }
+
+                licenses {
+                    license {
+                        name 'The Apache License, Version 2.0'
+                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id 'baswerc'
+                        name 'Corey Baswell'
+                        email 'corey.baswell@gmail.com'
+                    }
+                }
+            }
+        }
+    }
+}
 
 jar {
     from sourceSets.main.allSource
