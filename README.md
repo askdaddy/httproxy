@@ -62,10 +62,12 @@ Once you are ready to start listening for incoming HTTP requests to proxy call t
 
 ```Java
 IOProxyDirector proxyDirector = new MyIOProxyDirector();
-ThreadPoolExecutor threadPool = new ThreadPoolExecutor(250, 2000, 25, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
+ThreadPoolExecutor threadPool = new ThreadPoolExecutor(250, 2000, 25,
+     TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
 ServerSocket serverSocket = new ServerSocket(8080);
 ServerSocketAcceptLoop acceptLoop = new ServerSocketAcceptLoop(proxyDirector, threadPool);
 
-// blocks until acceptLoop.stop() is called from another thread or the server socket throws an IOException
+// blocks until acceptLoop.stop() is called from another thread or
+// the server socket throws an IOException
 acceptLoop.start(serverSocket);
 ```
