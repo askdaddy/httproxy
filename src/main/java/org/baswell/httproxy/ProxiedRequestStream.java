@@ -38,7 +38,7 @@ class ProxiedRequestStream extends ProxiedMessageStream
   }
 
   @Override
-  protected void onHeadersProcessed() throws IOException
+  protected void onHeadersProcessed() throws IOException, EndProxiedRequestException
   {
     super.onHeadersProcessed();
     if (outputStream == null)

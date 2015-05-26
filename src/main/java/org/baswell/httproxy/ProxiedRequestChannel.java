@@ -38,7 +38,7 @@ class ProxiedRequestChannel extends ProxiedMessageChannel
   }
 
   @Override
-  protected void onHeadersProcessed() throws IOException
+  protected void onHeadersProcessed() throws IOException, EndProxiedRequestException
   {
     super.onHeadersProcessed();
     if (writeChannel == null)

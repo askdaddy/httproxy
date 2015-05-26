@@ -52,7 +52,7 @@ abstract class ProxiedMessageStream extends ProxiedMessage
     sleepSecondsOnReadWait = proxyDirector.getSleepSecondsOnReadWait();
   }
 
-  void readAndWriteMessage() throws ProxiedIOException, HttpProtocolException
+  void readAndWriteMessage() throws ProxiedIOException, HttpProtocolException, EndProxiedRequestException
   {
     try
     {

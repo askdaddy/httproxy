@@ -31,11 +31,13 @@ public interface IOProxyDirector extends ProxyDirector
   int getSleepSecondsOnReadWait();
 
   /**
-   * Create a socket connection for the given proxied request.
+   * Create a socket connection for the given proxied request. If <code>null</code> is a returned a 404 will be
+   * returned to the client.
    *
    * @param request The proxied request.
    * @return The server connection the given request will be proxied to.
-   * @throws IOException If the server connection
+   * @throws IOException If the server connection cannot be made.
+   * @throws EndProxiedRequestException To return the provided HTTP status and message and end the proxied the request.
    */
-  Socket connectToProxiedHost(ProxiedRequest request) throws IOException;
+  Socket connectToProxiedHost(ProxiedRequest request) throws IOException, EndProxiedRequestException;
 }

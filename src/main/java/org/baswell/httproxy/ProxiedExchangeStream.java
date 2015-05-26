@@ -81,6 +81,16 @@ class ProxiedExchangeStream
         }
       }
     }
+    catch (EndProxiedRequestException e)
+    {
+      try
+      {
+        proxiedClientSocket.getOutputStream().write(e.toString().getBytes());
+      }
+      catch (IOException ie)
+      {}
+      close();
+    }
   }
 
   void proxyResponses()
@@ -134,12 +144,31 @@ class ProxiedExchangeStream
         }
       }
     }
+    catch (EndProxiedRequestException e)
+    {
+      /*
+       * This should never be thrown here. Only on request side from ProxyDirector when trying to connect to proxied
+       * server.
+       */
+      try
+      {
+        proxiedClientSocket.getOutputStream().write(e.toString().getBytes());
+      }
+      catch (IOException ie)
+      {}
+      close();
+    }
   }
 
-  synchronized OutputStream connectProxiedServer() throws IOException
+  synchronized OutputStream connectProxiedServer() throws IOException, EndProxiedRequestException
   {
     connectingServerSocket = true;
     proxiedServerSocket = proxyDirector.connectToProxiedHost(requestStream);
+    if (proxiedServerSocket == null)
+    {
+      throw EndProxiedRequestException.NOT_FOUND;
+    }
+
     proxiedServerSocket.setKeepAlive(true); // Use keep alives so we know when the far end has shutdown the socket.
     OutputStream outputStream = proxiedServerSocket.getOutputStream();
     connectingServerSocket = false;

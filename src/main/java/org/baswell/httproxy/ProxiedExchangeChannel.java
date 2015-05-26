@@ -16,6 +16,7 @@
 package org.baswell.httproxy;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 
@@ -123,6 +124,16 @@ class ProxiedExchangeChannel
       }
       close();
     }
+    catch (EndProxiedRequestException e)
+    {
+      try
+      {
+        clientSocketChannel.write(ByteBuffer.wrap(e.toString().getBytes()));
+      }
+      catch (IOException ie)
+      {}
+      close();
+    }
   }
 
   /*
@@ -172,10 +183,15 @@ class ProxiedExchangeChannel
     }
   }
 
-  SocketChannel connectProxiedServer() throws IOException
+  SocketChannel connectProxiedServer() throws IOException, EndProxiedRequestException
   {
     connectingServerChannel = true;
     serverSocketChannel = proxyDirector.connectToProxiedHost(requestChannel);
+    if (serverSocketChannel == null)
+    {
+      throw EndProxiedRequestException.NOT_FOUND;
+    }
+
     serverSocketChannel.configureBlocking(false);
     responseSelectionKey = serverSocketChannel.register(selectorLoop.selector, SelectionKey.OP_READ);
     responseSelectionKey.attach(this);

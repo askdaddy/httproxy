@@ -47,7 +47,7 @@ abstract class ProxiedMessageChannel extends ProxiedMessage
     this.maxWriteAttempts = proxyDirector.getMaxWriteAttempts();
   }
 
-  boolean readAndWriteAvailabe() throws ProxiedIOException, HttpProtocolException
+  boolean readAndWriteAvailabe() throws ProxiedIOException, HttpProtocolException, EndProxiedRequestException
   {
     try
     {

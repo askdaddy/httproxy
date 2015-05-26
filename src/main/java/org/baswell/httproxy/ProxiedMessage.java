@@ -140,7 +140,7 @@ abstract class ProxiedMessage implements ProxiedRequest, ProxiedResponse
     return (readState == ReadState.DONE) && ((writeBuffer == null) || writeBuffer.isEmpty());
   }
 
-  protected boolean readAndWriteBuffer() throws ProxiedIOException, IOException, HttpProtocolException
+  protected boolean readAndWriteBuffer() throws ProxiedIOException, IOException, HttpProtocolException, EndProxiedRequestException
   {
     readBuffer.mark();
 
@@ -252,7 +252,7 @@ abstract class ProxiedMessage implements ProxiedRequest, ProxiedResponse
     }
   }
 
-  void readHeaderLine() throws HttpProtocolException, IOException
+  void readHeaderLine() throws HttpProtocolException, IOException, EndProxiedRequestException
   {
     byte[] headerLineBytes;
     while ((headerLineBytes = readNextLine()) != null)
@@ -454,7 +454,7 @@ abstract class ProxiedMessage implements ProxiedRequest, ProxiedResponse
     return null;
   }
 
-  protected void onHeadersProcessed() throws IOException
+  protected void onHeadersProcessed() throws IOException, EndProxiedRequestException
   {}
 
   protected void reset()
@@ -532,9 +532,13 @@ abstract class ProxiedMessage implements ProxiedRequest, ProxiedResponse
     LF_2;
   }
 
-  protected static final byte CR = 13;
+  static final byte CR = 13;
 
-  protected static final byte LF = 10;
+  static final byte LF = 10;
 
-  protected static final byte SPACE = 20;
+  static final byte SPACE = 20;
+
+  static final String CRLF = (char)CR + "" + (char)LF;
+
+
 }
