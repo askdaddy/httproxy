@@ -59,7 +59,14 @@ abstract public class SimpleProxyDirector implements ProxyDirector
   @Override
   public String siftResponseHeader(String headerName, String headerValue, ProxiedRequest request, ProxiedResponse response)
   {
-    return null;
+    if (headerName.equalsIgnoreCase("Location") && headerValue.startsWith("https://"))
+    {
+      return "http://" + headerValue.substring("https://".length(), headerValue.length());
+    }
+    else
+    {
+      return null;
+    }
   }
 
   @Override
@@ -71,7 +78,7 @@ abstract public class SimpleProxyDirector implements ProxyDirector
   @Override
   public void onExchangeComplete(ProxiedRequest request, ProxiedResponse response)
   {
-    System.out.println(request.path() + " - " + (request.startedAt() - response.endedAt()));
+    System.out.println(request.path() + " - " + (response.endedAt() - request.startedAt() ));
   }
 
   @Override
