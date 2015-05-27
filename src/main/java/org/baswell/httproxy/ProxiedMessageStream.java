@@ -42,7 +42,7 @@ abstract class ProxiedMessageStream extends ProxiedMessage
 
   ProxiedMessageStream(boolean request, ProxiedExchangeStream proxiedExchangeStream, InputStream inputStream, OutputStream outputStream, IOProxyDirector proxyDirector)
   {
-    super(request, proxyDirector);
+    super(request, proxyDirector, proxyDirector.getBufferSize());
 
     this.proxiedExchangeStream = proxiedExchangeStream;
     this.inputStream = inputStream;

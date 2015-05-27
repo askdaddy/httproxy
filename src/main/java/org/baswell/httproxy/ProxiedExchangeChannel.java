@@ -192,8 +192,18 @@ class ProxiedExchangeChannel
       throw EndProxiedRequestException.NOT_FOUND;
     }
 
+    SocketChannel underlyingSocketChannel;
+    if (serverSocketChannel instanceof SSLSocketChannel)
+    {
+      underlyingSocketChannel = ((SSLSocketChannel)serverSocketChannel).getUnderlyingSocketChannel();
+    }
+    else
+    {
+      underlyingSocketChannel = serverSocketChannel;
+    }
+
     serverSocketChannel.configureBlocking(false);
-    responseSelectionKey = serverSocketChannel.register(selectorLoop.selector, SelectionKey.OP_READ);
+    responseSelectionKey = underlyingSocketChannel.register(selectorLoop.selector, SelectionKey.OP_READ);
     responseSelectionKey.attach(this);
     responseChannel = new ProxiedResponseChannel(this, serverSocketChannel, requestChannel.readChannel, proxyDirector);
     connectingServerChannel = false;

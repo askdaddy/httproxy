@@ -71,11 +71,11 @@ abstract class ProxiedMessage implements ProxiedRequest, ProxiedResponse
 
   protected ChunkedTerminatorState chunkedTerminatorState;
 
-  protected ProxiedMessage(boolean request, ProxyDirector proxyDirector)
+  protected ProxiedMessage(boolean request, ProxyDirector proxyDirector, int bufferSize)
   {
     this.request = request;
     this.proxyDirector = proxyDirector;
-    this.bufferSize = proxyDirector.getBufferSize();
+    this.bufferSize = bufferSize;
 
     readBuffer = ByteBuffer.allocate(bufferSize);
     readBuffer.compact();
