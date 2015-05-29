@@ -28,6 +28,8 @@ class SelectorLoop implements Runnable
 {
   private final NIOProxyDirector proxyDirector;
 
+  private final ProxyLogger log;
+
   Selector selector;
 
   private volatile Thread selectorThread;
@@ -37,6 +39,7 @@ class SelectorLoop implements Runnable
   SelectorLoop(NIOProxyDirector proxyDirector)
   {
     this.proxyDirector = proxyDirector;
+    this.log = proxyDirector.getLogger();
   }
 
   void start() throws IOException
@@ -98,7 +101,9 @@ class SelectorLoop implements Runnable
             new ProxiedExchangeChannel(this, socketChannelQueue.remove(0), proxyDirector);
           }
           catch (Exception e)
-          {}
+          {
+            log.error("Unable to create proxied exchange channel.", e);
+          }
         }
       }
       catch (IOException e)

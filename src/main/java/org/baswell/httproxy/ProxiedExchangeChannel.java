@@ -47,7 +47,20 @@ class ProxiedExchangeChannel
     this.proxyDirector = proxyDirector;
 
     clientSocketChannel.configureBlocking(false);
-    requestSelectionKey = clientSocketChannel.register(selectorLoop.selector, SelectionKey.OP_READ);
+
+
+
+    SocketChannel realSocketChannel;
+    if (clientSocketChannel instanceof WrappedSocketChannel)
+    {
+      realSocketChannel = ((WrappedSocketChannel)clientSocketChannel).getWrappedSocketChannel();
+    }
+    else
+    {
+      realSocketChannel = clientSocketChannel;
+    }
+
+    requestSelectionKey = realSocketChannel.register(selectorLoop.selector, SelectionKey.OP_READ);
     requestSelectionKey.attach(this);
     this.requestChannel = new ProxiedRequestChannel(this, clientSocketChannel, proxyDirector);
   }
@@ -192,18 +205,18 @@ class ProxiedExchangeChannel
       throw EndProxiedRequestException.NOT_FOUND;
     }
 
-    SocketChannel underlyingSocketChannel;
-    if (serverSocketChannel instanceof SSLSocketChannel)
+    SocketChannel realSocketChannel;
+    if (serverSocketChannel instanceof WrappedSocketChannel)
     {
-      underlyingSocketChannel = ((SSLSocketChannel)serverSocketChannel).getUnderlyingSocketChannel();
+      realSocketChannel = ((WrappedSocketChannel)serverSocketChannel).getWrappedSocketChannel();
     }
     else
     {
-      underlyingSocketChannel = serverSocketChannel;
+      realSocketChannel = serverSocketChannel;
     }
 
     serverSocketChannel.configureBlocking(false);
-    responseSelectionKey = underlyingSocketChannel.register(selectorLoop.selector, SelectionKey.OP_READ);
+    responseSelectionKey = realSocketChannel.register(selectorLoop.selector, SelectionKey.OP_READ);
     responseSelectionKey.attach(this);
     responseChannel = new ProxiedResponseChannel(this, serverSocketChannel, requestChannel.readChannel, proxyDirector);
     connectingServerChannel = false;

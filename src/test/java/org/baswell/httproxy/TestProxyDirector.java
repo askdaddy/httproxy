@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 abstract public class TestProxyDirector implements ProxyDirector
 {
@@ -130,5 +131,11 @@ abstract public class TestProxyDirector implements ProxyDirector
   public void onPrematureResponseClosed(ProxiedRequest request, ProxiedResponse response, IOException e)
   {
     prematureResponseClosed = true;
+  }
+
+  @Override
+  public ProxyLogger getLogger()
+  {
+    return new SimpleProxyLogger(SimpleProxyLogger.INFO_LEVEL);
   }
 }

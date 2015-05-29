@@ -108,4 +108,11 @@ public interface ProxyDirector
    * @param e The IO exception that signaled the close.
    */
   void onPrematureResponseClosed(ProxiedRequest request, ProxiedResponse response, IOException e);
+
+  /**
+   * The logger used by the HttProxy runtime.
+   *
+   * @return A logger or {@code null} to disable logging.
+   */
+  ProxyLogger getLogger();
 }

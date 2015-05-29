@@ -104,4 +104,10 @@ abstract public class SimpleProxyDirector implements ProxyDirector
   {
     System.err.println("Premature response closed for request: " + request.path());
   }
+
+  @Override
+  public ProxyLogger getLogger()
+  {
+    return new SimpleProxyLogger(SimpleProxyLogger.INFO_LEVEL);
+  }
 }

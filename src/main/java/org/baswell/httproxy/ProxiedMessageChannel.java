@@ -39,7 +39,7 @@ abstract class ProxiedMessageChannel extends ProxiedMessage
 
   ProxiedMessageChannel(boolean request, ProxiedExchangeChannel proxiedChannel, SocketChannel readChannel, SocketChannel writeChannel, NIOProxyDirector proxyDirector)
   {
-    super(request, proxyDirector, getSocketChannelBufferSize(readChannel, proxyDirector));
+    super(request, proxyDirector);
 
     this.proxiedChannel = proxiedChannel;
     this.readChannel = readChannel;
@@ -167,18 +167,6 @@ abstract class ProxiedMessageChannel extends ProxiedMessage
     catch (IOException e)
     {
       throw new ProxiedIOException(request, e);
-    }
-  }
-
-  static int getSocketChannelBufferSize(SocketChannel socketChannel, NIOProxyDirector proxyDirector)
-  {
-    if (socketChannel instanceof SSLSocketChannel)
-    {
-      return Math.max(((SSLSocketChannel)socketChannel).getApplicationBufferSize(), proxyDirector.getBufferSize());
-    }
-    else
-    {
-      return proxyDirector.getBufferSize();
     }
   }
 }
