@@ -15,6 +15,9 @@
  */
 package org.baswell.httproxy;
 
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * <p>
  * When thrown from {@link NIOProxyDirector#connectToProxiedHost(ProxiedRequest)} or {@link IOProxyDirector#connectToProxiedHost(ProxiedRequest)} methods the response code
@@ -23,6 +26,18 @@ package org.baswell.httproxy;
  */
 public class EndProxiedRequestException extends Exception
 {
+  /**
+   * <p>
+   * Shortcut for returning 200.
+   * </p>
+   *
+   * <pre>
+   * throw ReturnHttpResponseStatus.OK;
+   * </pre>
+   */
+  public static EndProxiedRequestException OK = new EndProxiedRequestException(200, "Ok");
+
+
   /**
    * <p>
    * Shortcut for returning 400.
@@ -68,11 +83,25 @@ public class EndProxiedRequestException extends Exception
   public static EndProxiedRequestException INTERNAL_SERVER_ERROR = new EndProxiedRequestException(500, "Internal Server Error");
 
   /**
+   * <p>Shortcut for returning redirect 301 to the given uri.</p>
+   *
+   * <pre>
+   * throw ReturnHttpResponseStatus.redirectPermanently("https://test.org/helloworld");
+   * </pre>
+   */
+  public static EndProxiedRequestException redirectPermanently(String uri)
+  {
+    return new EndProxiedRequestException(301, "Moved Permanently", Arrays.asList(new Header("Location", uri)));
+  }
+
+  /**
    * The HTTP status to return.
    */
   public final int code;
 
   public final String message;
+
+  public final List<Header> headers;
 
   /**
    *
@@ -85,13 +114,39 @@ public class EndProxiedRequestException extends Exception
    */
   public EndProxiedRequestException(int code, String message)
   {
+    this(code, message, null);
+  }
+
+  /**
+   *
+   * <pre>
+   * HTTP/1.0 code message
+   * </pre>
+   *
+   * @param code The HTTP status code to return.
+   * @param message The HTTP status message to return.
+   * @param headers The HTTP headers to send back in the response.
+   */
+  public EndProxiedRequestException(int code, String message, List<Header> headers)
+  {
     this.code = code;
     this.message = message;
+    this.headers = headers;
   }
 
   @Override
   public String toString()
   {
-    return "HTTP/1.1 " + code + " " + message + ProxiedMessage.CRLF + "Connection: close" + ProxiedMessage.CRLF + ProxiedMessage.CRLF;
+    String http = "HTTP/1.1 " + code + " " + message + ProxiedMessage.CRLF + "Connection: close" + ProxiedMessage.CRLF;
+    if (headers != null)
+    {
+      for (Header header : headers)
+      {
+        http += header.name + ": " + header.value + ProxiedMessage.CRLF;
+      }
+    }
+
+    http += ProxiedMessage.CRLF;
+    return http;
   }
 }
