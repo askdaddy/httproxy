@@ -75,6 +75,7 @@ acceptLoop.start(serverSocketChannel);
 
 #### SSL With Non-Blocking IO
 Unlike blocking IO, the JVM does not provide standard SSLSocketChannel and SSLServerSocketChannel classes that extend the base one. Instead the SSL exchanges must be manually orchestrated using a <a href="http://docs.oracle.com/javase/7/docs/api/javax/net/ssl/SSLEngine.html">SSLEngine</a>. 
+
 HttProxy provides two helper classes that implement this orchestration so you don't have to. Use the <a href="http://baswerc.github.io/httproxy/javadoc/org/baswell/httproxy/SSLServerSocketChannel.html">SSLServerSocketChannel</a> to accept incoming SSL connections with non-blocking IO.
 
 ```Java
