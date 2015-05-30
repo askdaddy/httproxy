@@ -53,6 +53,8 @@ abstract class ProxiedMessage implements ProxiedRequest, ProxiedResponse
 
   protected final boolean request;
 
+  protected final boolean overSsl;
+
   protected final ProxyDirector proxyDirector;
 
   protected ByteBuffer readBuffer;
@@ -71,9 +73,10 @@ abstract class ProxiedMessage implements ProxiedRequest, ProxiedResponse
 
   protected ChunkedTerminatorState chunkedTerminatorState;
 
-  protected ProxiedMessage(boolean request, ProxyDirector proxyDirector)
+  protected ProxiedMessage(boolean request, boolean overSsl, ProxyDirector proxyDirector)
   {
     this.request = request;
+    this.overSsl = overSsl;
     this.proxyDirector = proxyDirector;
     this.bufferSize = proxyDirector.getBufferSize();
 
@@ -91,6 +94,12 @@ abstract class ProxiedMessage implements ProxiedRequest, ProxiedResponse
   public long endedAt()
   {
     return endedAt;
+  }
+
+  @Override
+  public boolean overSSL()
+  {
+    return overSsl;
   }
 
   @Override

@@ -34,15 +34,15 @@ abstract class ProxiedMessageStream extends ProxiedMessage
 
   private final int sleepSecondsOnReadWait;
 
-  ProxiedMessageStream(boolean request, ProxiedExchangeStream proxiedExchangeStream, InputStream inputStream, IOProxyDirector proxyDirector)
+  ProxiedMessageStream(boolean request, boolean overSSL, ProxiedExchangeStream proxiedExchangeStream, InputStream inputStream, IOProxyDirector proxyDirector)
   {
-    this(request, proxiedExchangeStream, inputStream, null, proxyDirector);
+    this(request, overSSL, proxiedExchangeStream, inputStream, null, proxyDirector);
     writeBuffer = new TByteArrayList();
   }
 
-  ProxiedMessageStream(boolean request, ProxiedExchangeStream proxiedExchangeStream, InputStream inputStream, OutputStream outputStream, IOProxyDirector proxyDirector)
+  ProxiedMessageStream(boolean request, boolean overSSL, ProxiedExchangeStream proxiedExchangeStream, InputStream inputStream, OutputStream outputStream, IOProxyDirector proxyDirector)
   {
-    super(request, proxyDirector);
+    super(request, overSSL, proxyDirector);
 
     this.proxiedExchangeStream = proxiedExchangeStream;
     this.inputStream = inputStream;

@@ -39,7 +39,7 @@ abstract class ProxiedMessageChannel extends ProxiedMessage
 
   ProxiedMessageChannel(boolean request, ProxiedExchangeChannel proxiedChannel, SocketChannel readChannel, SocketChannel writeChannel, NIOProxyDirector proxyDirector)
   {
-    super(request, proxyDirector);
+    super(request, (readChannel instanceof SSLSocketChannel), proxyDirector);
 
     this.proxiedChannel = proxiedChannel;
     this.readChannel = readChannel;

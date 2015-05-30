@@ -20,9 +20,9 @@ import java.io.InputStream;
 
 class ProxiedRequestStream extends ProxiedMessageStream
 {
-  ProxiedRequestStream(ProxiedExchangeStream proxiedStream, InputStream inputStream, IOProxyDirector proxyDirector)
+  ProxiedRequestStream(ProxiedExchangeStream proxiedStream, boolean overSSL, InputStream inputStream, IOProxyDirector proxyDirector)
   {
-    super(true, proxiedStream, inputStream, proxyDirector);
+    super(true, overSSL, proxiedStream, inputStream, proxyDirector);
   }
 
   @Override

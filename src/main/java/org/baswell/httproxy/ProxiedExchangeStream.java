@@ -15,6 +15,7 @@
  */
 package org.baswell.httproxy;
 
+import javax.net.ssl.SSLSocket;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.Socket;
@@ -40,7 +41,7 @@ class ProxiedExchangeStream
     this.proxiedClientSocket = proxiedClientSocket;
     this.proxyDirector = proxyDirector;
 
-    requestStream = new ProxiedRequestStream(this, proxiedClientSocket.getInputStream(), proxyDirector);
+    requestStream = new ProxiedRequestStream(this, (proxiedClientSocket instanceof SSLSocket), proxiedClientSocket.getInputStream(), proxyDirector);
   }
 
   void proxyRequests()
@@ -173,7 +174,7 @@ class ProxiedExchangeStream
     OutputStream outputStream = proxiedServerSocket.getOutputStream();
     connectingServerSocket = false;
 
-    responseStream = new ProxiedResponseStream(this, proxiedServerSocket.getInputStream(), proxiedClientSocket.getOutputStream(), proxyDirector);
+    responseStream = new ProxiedResponseStream(this, (proxiedServerSocket instanceof SSLSocket), proxiedServerSocket.getInputStream(), proxiedClientSocket.getOutputStream(), proxyDirector);
 
     notify();
 

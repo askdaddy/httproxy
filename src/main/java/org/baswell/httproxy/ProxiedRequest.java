@@ -33,6 +33,12 @@ public interface ProxiedRequest
   long endedAt();
 
   /**
+   *
+   * @return <code>true</code> if this request was received over SSL.
+   */
+  boolean overSSL();
+
+  /**
    * Host: <b>www.host1.com:80</b>
    *
    * @return The <i>Host</i> header value for this request.
