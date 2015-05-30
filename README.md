@@ -5,7 +5,7 @@ the server connection to be proxied.
 ## Getting Started
 
 ### Direct Download
-You can download <a href="https://github.com/baswerc/httproxy/releases/download/v1.0/httproxy-1.0.jar">httproxy-1.0.jar</a> directly and place in your project.
+You can download <a href="https://github.com/baswerc/httproxy/releases/download/v1.1/httproxy-1.1.jar">httproxy-1.1.jar</a> directly and place in your project.
 
 ### Using Maven
 Add the following dependency into your Maven project:
@@ -14,7 +14,7 @@ Add the following dependency into your Maven project:
 <dependency>
     <groupId>org.baswell</groupId>
     <artifactId>httproxy</artifactId>
-    <version>1.0</version>
+    <version>1.1</version>
 </dependency>
 ````
 
