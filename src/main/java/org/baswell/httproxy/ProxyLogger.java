@@ -16,7 +16,7 @@
 package org.baswell.httproxy;
 
 /**
- * Bridge between your logging system and the HttProxy runtime.
+ * Bridge between your logging library and the HttProxy runtime.
  * 
  * @see ProxyDirector#getLogger() 
  */

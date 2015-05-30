@@ -83,7 +83,7 @@ NIOProxyDirector proxyDirector = new MyNIOProxyDirector();
 ServerSocketChannelAcceptLoop acceptLoop = new ServerSocketChannelAcceptLoop(proxyDirector);
 
 ServerSocketChannel serverSocketChannel = ServerSocketChannel.open();
-serverSocketChannel.socket().bind(new InetSocketAddress(8080));
+serverSocketChannel.socket().bind(new InetSocketAddress(443));
 
 SSLContext sslContext = SSLContext.getInstance("TLS");
 ThreadPoolExecutor sslThreadPool = new ThreadPoolExecutor(250, 2000, 25, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
