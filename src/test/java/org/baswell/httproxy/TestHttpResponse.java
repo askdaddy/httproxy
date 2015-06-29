@@ -3,7 +3,7 @@ package org.baswell.httproxy;
 import java.util.HashMap;
 import java.util.Map;
 
-public class HttpResponse
+public class TestHttpResponse
 {
   public int status;
 

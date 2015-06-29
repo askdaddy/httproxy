@@ -83,9 +83,9 @@ public class ChannelTests extends ProxyTests
       }
     };
 
-    HttpRequest request = new HttpRequest();
+    TestHttpRequest request = new TestHttpRequest();
     request.headers.put("One", "Two");
-    HttpResponse response = sendRequest(request);
+    TestHttpResponse response = sendRequest(request);
 
     assertEquals(200, response.status);
     assertEquals("HELLO WORLD!", new String(response.content));
@@ -122,10 +122,10 @@ public class ChannelTests extends ProxyTests
     proxyDirector.modifiedRequestHeaders.put("One", "2");
     proxyDirector.modifiedResponseHeaders.put("Three", "4");
 
-    HttpRequest request = new HttpRequest();
+    TestHttpRequest request = new TestHttpRequest();
     request.headers.put("One", "Two");
 
-    HttpResponse response = sendRequest(request);
+    TestHttpResponse response = sendRequest(request);
 
     assertTrue(response.headers.containsKey("Three"));
     assertEquals("4", response.headers.get("Three"));
@@ -144,8 +144,8 @@ public class ChannelTests extends ProxyTests
       }
     };
 
-    HttpRequest request = new HttpRequest();
-    HttpResponse response = sendRequest(request);
+    TestHttpRequest request = new TestHttpRequest();
+    TestHttpResponse response = sendRequest(request);
 
     assertTrue(proxyDirector.responseHeaders.containsKey("Transfer-encoding"));
     assertEquals("chunked", proxyDirector.responseHeaders.get("Transfer-encoding"));

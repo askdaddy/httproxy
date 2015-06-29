@@ -47,7 +47,7 @@ public class EndProxiedRequestException extends Exception
    * throw ReturnHttpResponseStatus.BAD_REQUEST;
    * </pre>
    */
-  public static EndProxiedRequestException BAD_REQUEST = new EndProxiedRequestException(400, "Bad Request");
+  public static EndProxiedRequestException BAD_REQUEST = new EndProxiedRequestException(400, "Bad HttpRequest");
 
   /**
    * <p>

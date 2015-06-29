@@ -45,7 +45,7 @@ abstract public class ProxyTests
     {}
   }
 
-  static HttpResponse sendRequest(HttpRequest request) throws IOException
+  static TestHttpResponse sendRequest(TestHttpRequest request) throws IOException
   {
     URL url = new URL(request.url);
     HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
@@ -62,7 +62,7 @@ abstract public class ProxyTests
       urlConnection.getOutputStream().write(request.content.getBytes());
     }
 
-    HttpResponse response = new HttpResponse();
+    TestHttpResponse response = new TestHttpResponse();
 
     response.status = urlConnection.getResponseCode();
     response.reason = urlConnection.getResponseMessage();

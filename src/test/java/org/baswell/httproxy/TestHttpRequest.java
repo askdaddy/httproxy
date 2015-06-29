@@ -3,7 +3,7 @@ package org.baswell.httproxy;
 import java.util.HashMap;
 import java.util.Map;
 
-public class HttpRequest
+public class TestHttpRequest
 {
   public String url = "http://localhost:9095/test";
 

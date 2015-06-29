@@ -84,7 +84,7 @@ abstract public class SimpleProxyDirector implements ProxyDirector
   @Override
   public void onRequestHttpProtocolError(ProxiedRequest request, String errorDescription)
   {
-    System.err.println("Request HTTP protocol error: " + errorDescription + " for request: " + request.path());
+    System.err.println("HttpRequest HTTP protocol error: " + errorDescription + " for request: " + request.path());
   }
 
   @Override

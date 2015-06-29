@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.baswell.httproxy.Header.*;
+import static org.baswell.httproxy.Constants.*;
 
 abstract class ProxiedMessage implements ProxiedRequest, ProxiedResponse
 {
@@ -540,14 +541,4 @@ abstract class ProxiedMessage implements ProxiedRequest, ProxiedResponse
     CR_2,
     LF_2;
   }
-
-  static final byte CR = 13;
-
-  static final byte LF = 10;
-
-  static final byte SPACE = 20;
-
-  static final String CRLF = (char)CR + "" + (char)LF;
-
-
 }

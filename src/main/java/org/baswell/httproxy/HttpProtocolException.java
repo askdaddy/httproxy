@@ -17,11 +17,11 @@ package org.baswell.httproxy;
 
 class HttpProtocolException extends Exception
 {
-  final boolean request;
+  final HttpMessage httpMessage;
 
-  HttpProtocolException(boolean request, String message)
+  HttpProtocolException(HttpMessage httpMessage, String message)
   {
     super(message);
-    this.request = request;
+    this.httpMessage = httpMessage;
   }
 }

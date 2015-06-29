@@ -15,6 +15,9 @@
  */
 package org.baswell.httproxy;
 
+import gnu.trove.list.array.TByteArrayList;
+import static org.baswell.httproxy.Constants.*;
+
 /**
  * An HTTP header.
  */
@@ -28,5 +31,14 @@ public class Header
   {
     this.name = name;
     this.value = value;
+  }
+
+  void addTo(TByteArrayList bytes)
+  {
+    bytes.add(name.getBytes());
+    bytes.add(": ".getBytes());
+    bytes.add(value.getBytes());
+    bytes.add(CR);
+    bytes.add(LF);
   }
 }
