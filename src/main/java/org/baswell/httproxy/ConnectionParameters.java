@@ -12,6 +12,8 @@ public class ConnectionParameters
 
   public final SSLContext sslContext;
 
+  public Object attachement;
+
   public ConnectionParameters(String ipOrHost, int port)
   {
     this(ipOrHost, port, null);

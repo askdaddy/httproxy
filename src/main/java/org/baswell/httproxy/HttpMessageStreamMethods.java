@@ -5,7 +5,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 
-class StreamMessageMethods
+class HttpMessageStreamMethods
 {
   static void doReadAndWriteMessage(HttpMessagePipe messagePipe, InputStream inputStream, byte[] readBytes, int sleepSecondsOnReadWait) throws ProxiedIOException, HttpProtocolException, EndProxiedRequestException
   {

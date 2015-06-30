@@ -4,7 +4,7 @@ import java.io.IOException;
 
 abstract class HttpResponsePipe extends HttpMessagePipe
 {
-  abstract void onResponse(HttpResponse response);
+  abstract void onResponse(HttpResponse response) throws IOException, EndProxiedRequestException;
 
   HttpResponse currentResponse;
 
@@ -25,7 +25,7 @@ abstract class HttpResponsePipe extends HttpMessagePipe
   }
 
   @Override
-  void onHeadersProcessed()
+  void onHeadersProcessed() throws IOException, EndProxiedRequestException
   {
     onResponse(currentResponse);
   }

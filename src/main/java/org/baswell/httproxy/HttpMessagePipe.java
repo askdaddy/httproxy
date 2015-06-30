@@ -12,7 +12,7 @@ abstract class HttpMessagePipe
 {
   abstract void readStatusLine() throws IOException;
 
-  abstract void onHeadersProcessed();
+  abstract void onHeadersProcessed() throws IOException, EndProxiedRequestException;
 
   abstract protected boolean write() throws ProxiedIOException;
 
@@ -48,7 +48,7 @@ abstract class HttpMessagePipe
     readBuffer.compact();
   }
 
-  protected boolean readAndWriteBuffer() throws ProxiedIOException, IOException, HttpProtocolException, EndProxiedRequestException
+  boolean readAndWriteBuffer() throws ProxiedIOException, IOException, HttpProtocolException, EndProxiedRequestException
   {
     readBuffer.mark();
 
@@ -88,6 +88,11 @@ abstract class HttpMessagePipe
     }
 
     return write();
+  }
+
+  boolean isMessageComplete()
+  {
+    return (readState == ReadState.DONE) && ((writeBuffer == null) || writeBuffer.isEmpty());
   }
 
   void readHeaderLine() throws HttpProtocolException, IOException, EndProxiedRequestException

@@ -6,23 +6,24 @@ import java.io.OutputStream;
 
 import static org.baswell.httproxy.HttpMessageStreamMethods.*;
 
-public class HttpRequestPipeStream extends HttpRequestPipe
+public class HttpResponsePipeStream extends HttpResponsePipe
 {
   final HttpExchangeStream exchangeStream;
 
-  final InputStream inputStream;
+  final OutputStream outputStream;
 
-  OutputStream currentOutputStream;
+  InputStream currentInputStream;
 
   byte[] readBytes;
 
-  int sleepSecondsOnReadWait;
+  final int sleepSecondsOnReadWait;
 
-  HttpRequestPipeStream(IOProxyDirector proxyDirector, HttpExchangeStream exchangeStream, InputStream inputStream)
+  HttpResponsePipeStream(IOProxyDirector proxyDirector, HttpExchangeStream exchangeStream, OutputStream outputStream)
   {
     super(proxyDirector);
+
     this.exchangeStream = exchangeStream;
-    this.inputStream= inputStream;
+    this.outputStream = outputStream;
 
     readBytes = new byte[bufferSize];
     sleepSecondsOnReadWait = proxyDirector.getSleepSecondsOnReadWait();
@@ -30,24 +31,24 @@ public class HttpRequestPipeStream extends HttpRequestPipe
 
   void readAndWriteMessage() throws ProxiedIOException, HttpProtocolException, EndProxiedRequestException
   {
-    doReadAndWriteMessage(this, inputStream, readBytes, sleepSecondsOnReadWait);
+    doReadAndWriteMessage(this, currentInputStream, readBytes, sleepSecondsOnReadWait);
   }
 
   @Override
   protected boolean write() throws ProxiedIOException
   {
-    return doWrite(this, currentOutputStream, readBytes);
+    return doWrite(this, outputStream, readBytes);
   }
 
   @Override
-  void onRequest(HttpRequest request) throws EndProxiedRequestException, IOException
+  void onResponse(HttpResponse response) throws IOException, EndProxiedRequestException
   {
-    exchangeStream.onRequest();
+    exchangeStream.onResponse();
   }
 
   @Override
   void onMessageDone()
   {
-    exchangeStream.onRequestDone();
+    exchangeStream.onResponseDone();
   }
 }

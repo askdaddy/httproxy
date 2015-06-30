@@ -41,14 +41,16 @@ public interface ProxyDirector
    */
   ConnectionParameters onRequest(HttpRequest httpRequest) throws EndProxiedRequestException;
 
-  void onResponse(HttpResponse response, ConnectionParameters connectionParameters);
+  void onRequestDone(HttpRequest httpRequest, ConnectionParameters connectionParameters);
+
+  void onResponse(HttpRequest httpRequest, HttpResponse response, ConnectionParameters connectionParameters);
 
   /**
    * Called when an httpRequest-response exchange has been completed.
    * @param httpRequest The proxied httpRequest.
    * @param response The proxied response.
    */
-  void onExchangeComplete(HttpRequest httpRequest, HttpResponse response);
+  void onExchangeComplete(HttpRequest httpRequest, HttpResponse response, ConnectionParameters connectionParameters);
 
   /**
    * Called when a httpRequest could not be correctly parsed.
@@ -65,7 +67,7 @@ public interface ProxyDirector
    * @param response The proxied response.
    * @param errorDescription A description of the protocol error.
    */
-  void onResponseHttpProtocolError(HttpRequest httpRequest, HttpResponse response, String errorDescription);
+  void onResponseHttpProtocolError(HttpRequest httpRequest, HttpResponse response, ConnectionParameters connectionParameters, String errorDescription);
 
   /**
    * Called when the client connection was closed before the httpRequest was fully read or the response was returned.

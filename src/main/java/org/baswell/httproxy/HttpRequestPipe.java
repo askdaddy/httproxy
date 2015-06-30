@@ -4,7 +4,7 @@ import java.io.IOException;
 
 abstract public class HttpRequestPipe extends HttpMessagePipe
 {
-  abstract void onRequest(HttpRequest request);
+  abstract void onRequest(HttpRequest request) throws EndProxiedRequestException, IOException;
 
   HttpRequest currentRequest;
 

@@ -26,12 +26,11 @@ abstract class ConnectionMultiplexer<Connection>
     }
   }
 
-  public void close()
+  public void closeQuitely()
   {
     for (Connection connection : connections.values())
     {
       closeQuitely(connection);
-      {}
     }
     connections.clear();
   }

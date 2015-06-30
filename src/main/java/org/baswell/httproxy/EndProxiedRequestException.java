@@ -18,6 +18,8 @@ package org.baswell.httproxy;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.baswell.httproxy.Constants.*;
+
 /**
  * <p>
  * When thrown from {@link NIOProxyDirector#connectToProxiedHost(ProxiedRequest)} or {@link IOProxyDirector#connectToProxiedHost(ProxiedRequest)} methods the response code
@@ -137,16 +139,16 @@ public class EndProxiedRequestException extends Exception
   @Override
   public String toString()
   {
-    String http = "HTTP/1.1 " + code + " " + message + ProxiedMessage.CRLF + "Connection: close" + ProxiedMessage.CRLF;
+    String http = "HTTP/1.1 " + code + " " + message + CRLF + "Connection: close" + CRLF;
     if (headers != null)
     {
       for (Header header : headers)
       {
-        http += header.name + ": " + header.value + ProxiedMessage.CRLF;
+        http += header.name + ": " + header.value + CRLF;
       }
     }
 
-    http += ProxiedMessage.CRLF;
+    http += CRLF;
     return http;
   }
 }
