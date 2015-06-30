@@ -16,11 +16,11 @@ abstract class HttpMessagePipe
 
   abstract protected boolean write() throws ProxiedIOException;
 
-  abstract void onExchangeDone();
+  abstract void onMessageDone();
 
   final ProxyDirector proxyDirector;
 
-  final ByteBuffer readBuffer;
+  ByteBuffer readBuffer;
 
   final int bufferSize;
 
@@ -30,7 +30,7 @@ abstract class HttpMessagePipe
 
   final TByteArrayList currentLine = new TByteArrayList(AVERAGE_HEADER_LENGTH);
 
-  TByteList writeBuffer;
+  TByteList writeBuffer = new TByteArrayList();
 
   Long contentLength;
 
@@ -84,7 +84,7 @@ abstract class HttpMessagePipe
 
     if (readState == ReadState.DONE)
     {
-
+      onMessageDone();
     }
 
     return write();

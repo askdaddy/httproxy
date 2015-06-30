@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.Socket;
 
-class ProxiedExchangeStream
+class ExchangeStream
 {
   private Socket proxiedClientSocket;
 
@@ -36,7 +36,7 @@ class ProxiedExchangeStream
 
   private volatile boolean closed;
 
-  ProxiedExchangeStream(Socket proxiedClientSocket, IOProxyDirector proxyDirector) throws IOException
+  ExchangeStream(Socket proxiedClientSocket, IOProxyDirector proxyDirector) throws IOException
   {
     this.proxiedClientSocket = proxiedClientSocket;
     this.proxyDirector = proxyDirector;

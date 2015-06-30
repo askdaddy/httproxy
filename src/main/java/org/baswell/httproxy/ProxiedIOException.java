@@ -19,13 +19,13 @@ import java.io.IOException;
 
 class ProxiedIOException extends Exception
 {
-  final boolean request;
+  final HttpMessage message;
 
   final IOException e;
 
-  ProxiedIOException(boolean request, IOException e)
+  ProxiedIOException(HttpMessage message, IOException e)
   {
-    this.request = request;
+    this.message = message;
     this.e = e;
   }
 }
