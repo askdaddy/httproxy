@@ -44,12 +44,12 @@ public class HttpResponsePipeStream extends HttpResponsePipe
   void onResponse(HttpResponse response) throws IOException, EndProxiedRequestException
   {
     exchangeStream.onResponse();
+    outputStream.write(currentResponse.toBytes());
   }
 
   @Override
   void onMessageDone() throws IOException
   {
-    outputStream.write(currentResponse.toBytes());
     exchangeStream.onResponseDone();
   }
 }

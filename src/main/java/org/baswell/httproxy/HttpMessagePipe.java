@@ -100,6 +100,7 @@ abstract class HttpMessagePipe
     byte[] headerLineBytes;
     while ((headerLineBytes = readNextLine()) != null)
     {
+      readBuffer.mark();
       if (lineHasContent(headerLineBytes))
       {
         Header header = currentMessage.addHeader(new String(headerLineBytes).trim());
@@ -139,7 +140,6 @@ abstract class HttpMessagePipe
       else
       {
         onHeadersProcessed();
-        readBuffer.mark();
 
         if ((chunkedTerminatorState != null))
         {

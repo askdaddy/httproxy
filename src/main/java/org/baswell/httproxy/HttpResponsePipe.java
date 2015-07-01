@@ -19,6 +19,7 @@ abstract class HttpResponsePipe extends HttpMessagePipe
     byte[] statusLine = readNextLine();
     if (statusLine != null)
     {
+      readBuffer.mark();
       currentMessage = currentResponse = new HttpResponse(new String(statusLine).trim());
       readState = ReadState.READING_HEADER;
     }
