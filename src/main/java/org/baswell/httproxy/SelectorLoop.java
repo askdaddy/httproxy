@@ -108,8 +108,10 @@ class SelectorLoop implements Runnable
       }
       catch (IOException e)
       {
-       // TODO Selector threw IO error so what does that mean and what to do ?
-        e.printStackTrace();
+        if (log != null)
+        {
+          log.error("Selector threw IO error?", e);
+        }
       }
     }
   }
