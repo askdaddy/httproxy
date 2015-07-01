@@ -47,7 +47,7 @@ class HttpExchangeChannel
 
   ConnectionParameters currentConnectionParameters;
 
-  HttpExchangeChannel(SelectorLoop selectorLoop, SocketChannel clientSocketChannel, NIOProxyDirector proxyDirector, ExecutorService sslThreadPool, ProxyLogger logger) throws IOException
+  HttpExchangeChannel(SelectorLoop selectorLoop, SocketChannel clientSocketChannel, NIOProxyDirector proxyDirector) throws IOException
   {
     this.selectorLoop = selectorLoop;
     this.clientSocketChannel = clientSocketChannel;
@@ -70,7 +70,7 @@ class HttpExchangeChannel
 
     requestPipeChannel = new HttpRequestPipeChannel(proxyDirector, this, clientSocketChannel);
     responsePipeChannel = new HttpResponsePipeChannel(proxyDirector, this, clientSocketChannel);
-    socketChannelMultiplexer = new SocketChannelMultiplexer(sslThreadPool, logger);
+    socketChannelMultiplexer = new SocketChannelMultiplexer(proxyDirector.getSSLThreadPool(), proxyDirector.getLogger());
   }
 
   void onReadReady(SelectionKey selectionKey)

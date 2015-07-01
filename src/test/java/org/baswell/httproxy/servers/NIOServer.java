@@ -58,7 +58,9 @@ public class NIOServer
 
     SSLEngine sslEngine = sslContext.createSSLEngine("localhost", 44301);
 
-    ServerSocketChannelAcceptLoop acceptLoop = new ServerSocketChannelAcceptLoop(new SimpleNIOProxyDirector("localhost", 8080) {
+    ServerSocketChannelAcceptLoop acceptLoop = new ServerSocketChannelAcceptLoop(new SimpleNIOProxyDirector("localhost", 8080)
+    {
+      /*
       public SocketChannel connectToProxiedHost(ProxiedRequest request) throws IOException
       {
         InetSocketAddress address = new InetSocketAddress("localhost", 44301);
@@ -69,6 +71,7 @@ public class NIOServer
 
         return new SSLSocketChannel(socketChannel, sslEngine, sslThreadPool, logger);
       }
+      */
     }, 1);
 //    ServerSocketChannelAcceptLoop acceptLoop = new ServerSocketChannelAcceptLoop(new SimpleNIOProxyDirector("localhost", 48001));
 

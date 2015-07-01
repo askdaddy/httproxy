@@ -1,5 +1,7 @@
 package org.baswell.httproxy;
 
+import java.net.HttpCookie;
+
 public class HttpResponse extends HttpMessage
 {
   public String version;
@@ -52,5 +54,10 @@ public class HttpResponse extends HttpMessage
   String getStatusLine()
   {
     return version + " " + statusCode + " " + reasonPhrase;
+  }
+
+  public void setCookie(HttpCookie cookie)
+  {
+    headers.add(new Header("Set-Cookie", cookie.toString()));
   }
 }

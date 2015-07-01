@@ -23,7 +23,7 @@ import java.util.concurrent.ExecutorService;
 
 public class ServerSocketAcceptLoop
 {
-  private final ThreadPoolDispatcher threadPoolDispatcher;
+  private final ExchangeStreamDispatcher exchangeStreamDispatcher;
 
   private volatile boolean started;
 
@@ -31,7 +31,7 @@ public class ServerSocketAcceptLoop
 
   public ServerSocketAcceptLoop(IOProxyDirector proxyDirector, ExecutorService executorService)
   {
-    this.threadPoolDispatcher = new ThreadPoolDispatcher(proxyDirector, executorService);
+    this.exchangeStreamDispatcher = new ExchangeStreamDispatcher(proxyDirector, executorService);
   }
 
   /**
@@ -54,7 +54,7 @@ public class ServerSocketAcceptLoop
         Socket socket = serverSocket.accept();
         if (socket != null)
         {
-          threadPoolDispatcher.dispatch(socket);
+          exchangeStreamDispatcher.dispatch(socket);
         }
       }
     }

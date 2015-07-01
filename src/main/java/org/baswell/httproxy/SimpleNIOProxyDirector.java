@@ -18,6 +18,7 @@ package org.baswell.httproxy;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.channels.SocketChannel;
+import java.util.concurrent.ExecutorService;
 
 /**
  * A simple NIOProxyDirector that proxies to a single server and prints out proxy events.
@@ -41,9 +42,8 @@ public class SimpleNIOProxyDirector extends SimpleProxyDirector implements NIOPr
   }
 
   @Override
-  public SocketChannel connectToProxiedHost(ProxiedRequest request) throws IOException
+  public ExecutorService getSSLThreadPool()
   {
-    return SocketChannel.open(new InetSocketAddress(proxiedHost, proxiedPort));
+    return null;
   }
-
 }

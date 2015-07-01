@@ -16,7 +16,7 @@ abstract class HttpMessagePipe
 
   abstract protected boolean write() throws ProxiedIOException;
 
-  abstract void onMessageDone();
+  abstract void onMessageDone() throws IOException;
 
   final ProxyDirector proxyDirector;
 

@@ -102,22 +102,25 @@ class HttpExchangeStream
   {
     try
     {
-      synchronized (this)
-      {
-        if (responsePipeStream.currentInputStream == null)
-        {
-          try
-          {
-            wait();
-          }
-          catch (InterruptedException e)
-          {}
-        }
-      }
-
       while (!closed)
       {
-        responsePipeStream.readAndWriteMessage();
+        synchronized (this)
+        {
+          if (responsePipeStream.currentInputStream == null)
+          {
+            try
+            {
+              wait();
+            }
+            catch (InterruptedException e)
+            {}
+          }
+        }
+
+        if (!closed && responsePipeStream.currentInputStream != null)
+        {
+          responsePipeStream.readAndWriteMessage();
+        }
       }
     }
     catch (ProxiedIOException proxiedIOException)
@@ -179,12 +182,19 @@ class HttpExchangeStream
       connectingServerSocket = false;
       requestPipeStream.currentOutputStream = serverSocket.getOutputStream();
       responsePipeStream.currentInputStream = serverSocket.getInputStream();
+
+
+      synchronized (this)
+      {
+        notifyAll();
+      }
     }
   }
 
   void onRequestDone()
   {
     proxyDirector.onRequestDone(requestPipeStream.currentRequest, currentConnectionParameters);
+    requestPipeStream.currentOutputStream = null;
   }
 
   void onResponse() throws EndProxiedRequestException, IOException
@@ -194,10 +204,13 @@ class HttpExchangeStream
 
   void onResponseDone()
   {
+    String msg = "\n\n***************************\n" + requestPipeStream.currentRequest + "\n\n\n" + responsePipeStream.currentResponse + "\n***************************\n\n";
+    System.out.println(msg);
     proxyDirector.onExchangeComplete(requestPipeStream.currentRequest, responsePipeStream.currentResponse, currentConnectionParameters);
+    responsePipeStream.currentInputStream = null;
   }
 
-  synchronized void close()
+  void close()
   {
     closed = true;
     if (clientSocket.isConnected())
@@ -210,7 +223,10 @@ class HttpExchangeStream
       {}
     }
 
-    notify();
+    synchronized (this)
+    {
+      notify();
+    }
 
     socketMultiplexer.closeQuitely();
   }

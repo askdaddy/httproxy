@@ -78,7 +78,7 @@ class SelectorLoop implements Runnable
           while (selectionKeys.hasNext())
           {
             SelectionKey selectionKey = selectionKeys.next();
-            ProxiedExchangeChannel connection = (ProxiedExchangeChannel)selectionKey.attachment();
+            HttpExchangeChannel connection = (HttpExchangeChannel)selectionKey.attachment();
 
             if (selectionKey.isValid() && selectionKey.isWritable() && ((selectionKey.interestOps() & SelectionKey.OP_WRITE) != 0))
             {
@@ -98,7 +98,7 @@ class SelectorLoop implements Runnable
         {
           try
           {
-            new ProxiedExchangeChannel(this, socketChannelQueue.remove(0), proxyDirector);
+            new HttpExchangeChannel(this, socketChannelQueue.remove(0), proxyDirector);
           }
           catch (Exception e)
           {

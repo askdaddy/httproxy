@@ -1,5 +1,9 @@
 package org.baswell.httproxy;
 
+import java.net.HttpCookie;
+import java.util.ArrayList;
+import java.util.List;
+
 public class HttpRequest extends HttpMessage
 {
   public String method;
@@ -32,6 +36,36 @@ public class HttpRequest extends HttpMessage
         }
       }
     }
+  }
+
+  public String getHost()
+  {
+    return getHeaderValue("Host");
+  }
+
+  public String getUserAgent()
+  {
+    return getHeaderValue("User-Agent");
+  }
+
+  public List<HttpCookie> getCookies()
+  {
+    List<HttpCookie> cookies = new ArrayList<HttpCookie>();
+    for (Header cookieHeader : getHeaders("Cookie"))
+    {
+      try
+      {
+        cookies.addAll(HttpCookie.parse(cookieHeader.value));
+      }
+      catch (Exception e)
+      {}
+    }
+    return cookies;
+  }
+
+  public void addCookie(HttpCookie cookie)
+  {
+    headers.add(new Header("Cookie", cookie.toString()));
   }
 
   @Override

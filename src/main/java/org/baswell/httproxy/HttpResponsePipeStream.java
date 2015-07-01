@@ -46,9 +46,13 @@ public class HttpResponsePipeStream extends HttpResponsePipe
     exchangeStream.onResponse();
   }
 
+  HttpResponse lastResponse;
+
   @Override
-  void onMessageDone()
+  void onMessageDone() throws IOException
   {
+    outputStream.write(currentResponse.toBytes());
+    lastResponse = currentResponse;
     exchangeStream.onResponseDone();
   }
 }

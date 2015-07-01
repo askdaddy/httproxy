@@ -29,15 +29,4 @@ public interface IOProxyDirector extends ProxyDirector
    * @return The number of seconds to sleep when a Socket's inputstream is still open but no content is available.
    */
   int getSleepSecondsOnReadWait();
-
-  /**
-   * Create a socket connection for the given proxied request. If <code>null</code> is a returned a 404 will be
-   * returned to the client.
-   *
-   * @param request The proxied request.
-   * @return The server connection the given request will be proxied to.
-   * @throws IOException If the server connection cannot be made.
-   * @throws EndProxiedRequestException To return the provided HTTP status and message and end the proxied the request.
-   */
-  Socket connectToProxiedHost(ProxiedRequest request) throws IOException, EndProxiedRequestException;
 }

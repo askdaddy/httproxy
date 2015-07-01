@@ -36,6 +36,38 @@ abstract public class HttpMessage
     }
   }
 
+  public List<Header> getHeaders(String name)
+  {
+    List<Header> headersWithName = new ArrayList<Header>();
+    for (Header header : headers)
+    {
+      if (header.name.equalsIgnoreCase(name))
+      {
+        headersWithName.add(header);
+      }
+    }
+    return headersWithName;
+  }
+
+  public String getHeaderValue(String name)
+  {
+    for (Header header : headers)
+    {
+      if (header.name.equalsIgnoreCase(name))
+      {
+        return header.value;
+      }
+    }
+
+    return null;
+  }
+
+  @Override
+  public String toString()
+  {
+    return new String(toBytes());
+  }
+
   byte[] toBytes()
   {
     TByteArrayList bytes = new TByteArrayList((headers.size() + 1) * AVERAGE_HEADER_LENGTH);

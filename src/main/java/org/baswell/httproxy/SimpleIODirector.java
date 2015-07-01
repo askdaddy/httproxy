@@ -38,10 +38,4 @@ public class SimpleIODirector extends SimpleProxyDirector implements IOProxyDire
   {
     return sleepSecondsOnReadWait;
   }
-
-  @Override
-  public Socket connectToProxiedHost(ProxiedRequest request) throws IOException
-  {
-    return new Socket(proxiedHost, proxiedPort);
-  }
 }

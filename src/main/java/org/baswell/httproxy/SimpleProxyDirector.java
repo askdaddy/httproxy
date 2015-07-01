@@ -32,10 +32,14 @@ abstract public class SimpleProxyDirector implements ProxyDirector
 
   protected final int proxiedPort;
 
+  protected final ConnectionParameters connectionParameters;
+
   protected SimpleProxyDirector(String proxiedHost, int proxiedPort)
   {
     this.proxiedHost = proxiedHost;
     this.proxiedPort = proxiedPort;
+
+    connectionParameters = new ConnectionParameters(proxiedHost, proxiedPort);
   }
 
   @Override
@@ -45,64 +49,48 @@ abstract public class SimpleProxyDirector implements ProxyDirector
   }
 
   @Override
-  public String siftRequestHeader(String headerName, String headerValue, ProxiedRequest request)
+  public ConnectionParameters onRequest(HttpRequest httpRequest) throws EndProxiedRequestException
   {
-    return null;
+    System.out.println("--> " + httpRequest.getStatusLine());
+    return connectionParameters;
   }
 
   @Override
-  public List<Header> addRequestHeaders(ProxiedRequest request)
+  public void onRequestDone(HttpRequest httpRequest, ConnectionParameters connectionParameters)
+  {}
+
+  @Override
+  public void onResponse(HttpRequest httpRequest, HttpResponse response, ConnectionParameters connectionParameters)
   {
-    return null;
+    System.out.println(" <-- " + response.getStatusLine());
   }
 
   @Override
-  public String siftResponseHeader(String headerName, String headerValue, ProxiedRequest request, ProxiedResponse response)
+  public void onExchangeComplete(HttpRequest httpRequest, HttpResponse response, ConnectionParameters connectionParameters)
+  {}
+
+  @Override
+  public void onRequestHttpProtocolError(HttpRequest httpRequest, String errorDescription)
   {
-    if (headerName.equalsIgnoreCase("Location") && headerValue.startsWith("https://"))
-    {
-      return "http://" + headerValue.substring("https://".length(), headerValue.length());
-    }
-    else
-    {
-      return null;
-    }
+    System.err.println("Request protocol error: " + errorDescription);
   }
 
   @Override
-  public List<Header> addResponseHeaders(ProxiedRequest request, ProxiedResponse response)
+  public void onResponseHttpProtocolError(HttpRequest httpRequest, HttpResponse response, ConnectionParameters connectionParameters, String errorDescription)
   {
-    return null;
+    System.err.println("Response protocol error: " + errorDescription);
   }
 
   @Override
-  public void onExchangeComplete(ProxiedRequest request, ProxiedResponse response)
+  public void onPrematureRequestClosed(HttpRequest httpRequest, IOException e)
   {
-    System.out.println(request.path() + " - " + (response.endedAt() - request.startedAt() ));
+    System.err.println("Request premature closed: " + e.getMessage());
   }
 
   @Override
-  public void onRequestHttpProtocolError(ProxiedRequest request, String errorDescription)
+  public void onPrematureResponseClosed(HttpRequest httpRequest, HttpResponse response, ConnectionParameters connectionParameters, IOException e)
   {
-    System.err.println("HttpRequest HTTP protocol error: " + errorDescription + " for request: " + request.path());
-  }
-
-  @Override
-  public void onResponseHttpProtocolError(ProxiedRequest request, ProxiedResponse response, String errorDescription)
-  {
-    System.err.println("Response HTTP protocol error: " + errorDescription + " for request: " + request.path());
-  }
-
-  @Override
-  public void onPrematureRequestClosed(ProxiedRequest request, IOException e)
-  {
-    System.err.println("Premature request closed for request: " + request.path());
-  }
-
-  @Override
-  public void onPrematureResponseClosed(ProxiedRequest request, ProxiedResponse response, IOException e)
-  {
-    System.err.println("Premature response closed for request: " + request.path());
+    System.err.println("Response premature closed: " + e.getMessage());
   }
 
   @Override

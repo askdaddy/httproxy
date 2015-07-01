@@ -19,13 +19,13 @@ import java.io.IOException;
 import java.net.Socket;
 import java.util.concurrent.ExecutorService;
 
-class ThreadPoolDispatcher
+class ExchangeStreamDispatcher
 {
   private final ExecutorService executorService;
 
   private final IOProxyDirector proxyDirector;
 
-  ThreadPoolDispatcher(IOProxyDirector proxyDirector, ExecutorService executorService)
+  ExchangeStreamDispatcher(IOProxyDirector proxyDirector, ExecutorService executorService)
   {
     this.proxyDirector = proxyDirector;
     this.executorService = executorService;
@@ -35,13 +35,13 @@ class ThreadPoolDispatcher
   {
     try
     {
-      final ProxiedExchangeStream exchangeStream = new ProxiedExchangeStream(socket, proxyDirector);
+      final HttpExchangeStream exchangeStream = new HttpExchangeStream(socket, proxyDirector);
 
       executorService.execute(new Runnable()
       {
         public void run()
         {
-          exchangeStream.proxyRequests();
+          exchangeStream.requestLoop();
         }
       });
 
@@ -49,7 +49,7 @@ class ThreadPoolDispatcher
       {
         public void run()
         {
-          exchangeStream.proxyResponses();
+          exchangeStream.responseLoop();
         }
       });
 

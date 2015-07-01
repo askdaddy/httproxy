@@ -46,8 +46,9 @@ public class HttpRequestPipeStream extends HttpRequestPipe
   }
 
   @Override
-  void onMessageDone()
+  void onMessageDone() throws IOException
   {
+    currentOutputStream.write(currentRequest.toBytes());
     exchangeStream.onRequestDone();
   }
 }

@@ -1,6 +1,5 @@
 package org.baswell.httproxy.servers;
 
-import org.baswell.httproxy.ProxiedRequest;
 import org.baswell.httproxy.ServerSocketAcceptLoop;
 import org.baswell.httproxy.SimpleIODirector;
 
@@ -21,6 +20,7 @@ public class IOServer
 {
   public static void main(String[] args) throws Exception
   {
+    /*
     final SSLContext sslContext = SSLContext.getInstance("TLSv");
 
     sslContext.init(null, new TrustManager[]{new X509TrustManager()
@@ -39,15 +39,19 @@ public class IOServer
         return null;
       }
     }}, new SecureRandom());
+    */
 
 
     ThreadPoolExecutor threadPool = new ThreadPoolExecutor(250, 2000, 25, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
     ServerSocket serverSocket = new ServerSocket(9090);
-    ServerSocketAcceptLoop acceptLoop = new ServerSocketAcceptLoop(new SimpleIODirector("localhost", 8080) {
+    ServerSocketAcceptLoop acceptLoop = new ServerSocketAcceptLoop(new SimpleIODirector("localhost", 8080)
+    {
+      /*
       public Socket connectToProxiedHost(ProxiedRequest request) throws IOException
       {
         return sslContext.getSocketFactory().createSocket("localhost", 44301);
       }
+      */
     }, threadPool);
     acceptLoop.start(serverSocket);
   }

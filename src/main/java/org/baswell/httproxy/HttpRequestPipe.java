@@ -25,7 +25,7 @@ abstract public class HttpRequestPipe extends HttpMessagePipe
   }
 
   @Override
-  void onHeadersProcessed()
+  void onHeadersProcessed() throws EndProxiedRequestException, IOException
   {
     onRequest(currentRequest);
   }
