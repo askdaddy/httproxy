@@ -178,7 +178,7 @@ class HttpExchangeStream
     else
     {
       connectingServerSocket = true;
-      Socket serverSocket = socketMultiplexer.connect(currentConnectionParameters);
+      Socket serverSocket = socketMultiplexer.getConnectionFor(currentConnectionParameters);
       connectingServerSocket = false;
       requestPipeStream.currentOutputStream = serverSocket.getOutputStream();
       responsePipeStream.currentInputStream = serverSocket.getInputStream();
@@ -204,8 +204,6 @@ class HttpExchangeStream
 
   void onResponseDone()
   {
-    String msg = "\n\n***************************\n" + requestPipeStream.currentRequest + "\n\n\n" + responsePipeStream.currentResponse + "\n***************************\n\n";
-    System.out.println(msg);
     proxyDirector.onExchangeComplete(requestPipeStream.currentRequest, responsePipeStream.currentResponse, currentConnectionParameters);
     responsePipeStream.currentInputStream = null;
   }

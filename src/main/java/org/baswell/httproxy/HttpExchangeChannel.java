@@ -230,7 +230,7 @@ class HttpExchangeChannel
       throw EndProxiedRequestException.NOT_FOUND;
     }
 
-    SocketChannel serverSocketChannel = socketChannelMultiplexer.connect(currentConnectionParameters);
+    SocketChannel serverSocketChannel = socketChannelMultiplexer.getConnectionFor(currentConnectionParameters);
 
     if (responseSelectionKeys.containsKey(currentConnectionParameters))
     {
@@ -244,6 +244,7 @@ class HttpExchangeChannel
       responseSelectionKeys.put(currentConnectionParameters, currentResponseSelectionKey);
     }
 
+    requestPipeChannel.currentWriteChannel = responsePipeChannel.currentReadChannel = serverSocketChannel;
     connectingServerChannel = false;
   }
 

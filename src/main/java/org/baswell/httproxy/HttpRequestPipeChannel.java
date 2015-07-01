@@ -39,6 +39,7 @@ public class HttpRequestPipeChannel extends HttpRequestPipe
   @Override
   void onRequest(HttpRequest request) throws EndProxiedRequestException, IOException
   {
+    writeBuffer.add(currentRequest.toBytes());
     exchangeChannel.onRequest();
   }
 

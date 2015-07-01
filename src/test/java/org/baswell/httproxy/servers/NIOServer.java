@@ -25,9 +25,6 @@ public class NIOServer
 {
   public static void main(String[] args) throws Exception
   {
-    int maxKeyLen = Cipher.getMaxAllowedKeyLength("AES");
-    System.out.println(maxKeyLen);
-
     final SSLContext sslContext = SSLContext.getInstance("TLS");
 
     TrustManager trustAll = new X509TrustManager()
@@ -91,7 +88,7 @@ public class NIOServer
     ServerSocketChannel serverSocketChannel = ServerSocketChannel.open();
     serverSocketChannel.socket().bind(new InetSocketAddress(9090));
 
-    SSLServerSocketChannel sslServerSocketChannel = new SSLServerSocketChannel(serverSocketChannel, serverContext, sslThreadPool, logger);
-    acceptLoop.start(sslServerSocketChannel);
+//    SSLServerSocketChannel sslServerSocketChannel = new SSLServerSocketChannel(serverSocketChannel, serverContext, sslThreadPool, logger);
+    acceptLoop.start(serverSocketChannel);
   }
 }

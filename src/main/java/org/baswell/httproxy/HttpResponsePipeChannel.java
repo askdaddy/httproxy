@@ -39,7 +39,8 @@ public class HttpResponsePipeChannel extends HttpResponsePipe
   @Override
   void onResponse(HttpResponse response) throws IOException, EndProxiedRequestException
   {
-    exchangeChannel.onRequest();
+    exchangeChannel.onResponse();
+    writeBuffer.add(currentResponse.toBytes());
   }
 
   @Override
