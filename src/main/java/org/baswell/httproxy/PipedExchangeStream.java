@@ -18,15 +18,15 @@ package org.baswell.httproxy;
 import java.io.IOException;
 import java.net.Socket;
 
-class HttpExchangeStream
+class PipedExchangeStream
 {
   private final Socket clientSocket;
 
   private final IOProxyDirector proxyDirector;
 
-  private final HttpRequestPipeStream requestPipeStream;
+  private final PipedRequestStream requestPipeStream;
 
-  private final HttpResponsePipeStream responsePipeStream;
+  private final PipedResponseStream responsePipeStream;
 
   private final SocketMultiplexer socketMultiplexer;
 
@@ -36,14 +36,14 @@ class HttpExchangeStream
 
   private volatile boolean closed;
 
-  HttpExchangeStream(Socket clientSocket, IOProxyDirector proxyDirector) throws IOException
+  PipedExchangeStream(Socket clientSocket, IOProxyDirector proxyDirector) throws IOException
   {
     this.clientSocket = clientSocket;
     this.proxyDirector = proxyDirector;
 
 
-    requestPipeStream = new HttpRequestPipeStream(proxyDirector, this, clientSocket.getInputStream());
-    responsePipeStream = new HttpResponsePipeStream(proxyDirector, this, clientSocket.getOutputStream());
+    requestPipeStream = new PipedRequestStream(proxyDirector, this, clientSocket.getInputStream());
+    responsePipeStream = new PipedResponseStream(proxyDirector, this, clientSocket.getOutputStream());
 
     socketMultiplexer = new SocketMultiplexer();
   }

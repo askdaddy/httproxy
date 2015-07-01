@@ -92,7 +92,7 @@ public class EndProxiedRequestException extends Exception
    */
   public static EndProxiedRequestException redirectPermanently(String uri)
   {
-    return new EndProxiedRequestException(301, "Moved Permanently", Arrays.asList(new Header("Location", uri)));
+    return new EndProxiedRequestException(301, "Moved Permanently", Arrays.asList(new HttpHeader("Location", uri)));
   }
 
   /**
@@ -102,7 +102,7 @@ public class EndProxiedRequestException extends Exception
 
   public final String message;
 
-  public final List<Header> headers;
+  public final List<HttpHeader> headers;
 
   /**
    *
@@ -128,7 +128,7 @@ public class EndProxiedRequestException extends Exception
    * @param message The HTTP status message to return.
    * @param headers The HTTP headers to send back in the response.
    */
-  public EndProxiedRequestException(int code, String message, List<Header> headers)
+  public EndProxiedRequestException(int code, String message, List<HttpHeader> headers)
   {
     this.code = code;
     this.message = message;
@@ -141,7 +141,7 @@ public class EndProxiedRequestException extends Exception
     String http = "HTTP/1.1 " + code + " " + message + CRLF + "Connection: close" + CRLF;
     if (headers != null)
     {
-      for (Header header : headers)
+      for (HttpHeader header : headers)
       {
         http += header.name + ": " + header.value + CRLF;
       }

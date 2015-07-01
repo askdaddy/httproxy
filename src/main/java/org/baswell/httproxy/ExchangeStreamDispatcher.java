@@ -35,7 +35,7 @@ class ExchangeStreamDispatcher
   {
     try
     {
-      final HttpExchangeStream exchangeStream = new HttpExchangeStream(socket, proxyDirector);
+      final PipedExchangeStream exchangeStream = new PipedExchangeStream(socket, proxyDirector);
 
       executorService.execute(new Runnable()
       {

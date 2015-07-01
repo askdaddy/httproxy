@@ -24,7 +24,7 @@ import java.util.Date;
 
 import static org.baswell.httproxy.Constants.*;
 
-abstract class HttpMessagePipe
+abstract class PipedMessage
 {
   abstract void readStatusLine() throws IOException;
 
@@ -54,7 +54,7 @@ abstract class HttpMessagePipe
 
   ChunkedTerminatorState chunkedTerminatorState;
 
-  HttpMessagePipe(ProxyDirector proxyDirector)
+  PipedMessage(ProxyDirector proxyDirector)
   {
     this.proxyDirector = proxyDirector;
 
@@ -120,7 +120,7 @@ abstract class HttpMessagePipe
       readBuffer.mark();
       if (lineHasContent(headerLineBytes))
       {
-        Header header = currentMessage.addHeader(new String(headerLineBytes).trim());
+        HttpHeader header = currentMessage.addHeader(new String(headerLineBytes).trim());
         if (header != null)
         {
           /*

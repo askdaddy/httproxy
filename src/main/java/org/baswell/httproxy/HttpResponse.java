@@ -73,6 +73,6 @@ public class HttpResponse extends HttpMessage
 
   public void setCookie(HttpCookie cookie)
   {
-    headers.add(new Header("Set-Cookie", cookie.toString()));
+    headers.add(new HttpHeader("Set-Cookie", cookie.toString()));
   }
 }

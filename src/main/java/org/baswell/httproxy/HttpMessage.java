@@ -28,20 +28,20 @@ abstract public class HttpMessage
 
   public final Date startedAt = new Date();
 
-  public List<Header> headers = new ArrayList<Header>();
+  public List<HttpHeader> headers = new ArrayList<HttpHeader>();
 
   public Date endedAt;
 
   public Object attachement;
 
-  Header addHeader(String headerLine)
+  HttpHeader addHeader(String headerLine)
   {
     int index = headerLine.indexOf(':');
     if ((index > 0) && (index < (headerLine.length() - 1)))
     {
       String name = headerLine.substring(0, index).trim();
       String value = headerLine.substring(index + 1, headerLine.length()).trim();
-      Header header = new Header(name, value);
+      HttpHeader header = new HttpHeader(name, value);
       headers.add(header);
       return header;
     }
@@ -51,10 +51,10 @@ abstract public class HttpMessage
     }
   }
 
-  public List<Header> getHeaders(String name)
+  public List<HttpHeader> getHeaders(String name)
   {
-    List<Header> headersWithName = new ArrayList<Header>();
-    for (Header header : headers)
+    List<HttpHeader> headersWithName = new ArrayList<HttpHeader>();
+    for (HttpHeader header : headers)
     {
       if (header.name.equalsIgnoreCase(name))
       {
@@ -66,7 +66,7 @@ abstract public class HttpMessage
 
   public String getHeaderValue(String name)
   {
-    for (Header header : headers)
+    for (HttpHeader header : headers)
     {
       if (header.name.equalsIgnoreCase(name))
       {
@@ -90,7 +90,7 @@ abstract public class HttpMessage
     bytes.add(CR);
     bytes.add(LF);
 
-    for (Header header : headers)
+    for (HttpHeader header : headers)
     {
       header.addTo(bytes);
     }

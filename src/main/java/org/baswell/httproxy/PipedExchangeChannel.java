@@ -22,19 +22,21 @@ import java.nio.channels.SocketChannel;
 import java.util.HashMap;
 import java.util.Map;
 
-class HttpExchangeChannel
+class PipedExchangeChannel
 {
   private final SelectorLoop selectorLoop;
 
   private final SocketChannel clientSocketChannel;
 
-  private final HttpRequestPipeChannel requestPipeChannel;
+  private final PipeRequestChannel requestPipeChannel;
 
-  private final HttpResponsePipeChannel responsePipeChannel;
+  private final PipedResponseChannel responsePipeChannel;
 
   private final SelectionKey requestSelectionKey;
 
   private final NIOProxyDirector proxyDirector;
+
+  private final ProxyLogger log;
 
   private final SocketChannelMultiplexer socketChannelMultiplexer;
 
@@ -46,12 +48,13 @@ class HttpExchangeChannel
 
   private ConnectionParameters currentConnectionParameters;
 
-  HttpExchangeChannel(SelectorLoop selectorLoop, SocketChannel clientSocketChannel, NIOProxyDirector proxyDirector) throws IOException
+  PipedExchangeChannel(SelectorLoop selectorLoop, SocketChannel clientSocketChannel, NIOProxyDirector proxyDirector) throws IOException
   {
     this.selectorLoop = selectorLoop;
     this.clientSocketChannel = clientSocketChannel;
     this.proxyDirector = proxyDirector;
 
+    log = proxyDirector.getLogger();
     clientSocketChannel.configureBlocking(false);
 
     SocketChannel realSocketChannel;
@@ -67,8 +70,8 @@ class HttpExchangeChannel
     requestSelectionKey = realSocketChannel.register(selectorLoop.selector, SelectionKey.OP_READ);
     requestSelectionKey.attach(this);
 
-    requestPipeChannel = new HttpRequestPipeChannel(proxyDirector, this, clientSocketChannel);
-    responsePipeChannel = new HttpResponsePipeChannel(proxyDirector, this, clientSocketChannel);
+    requestPipeChannel = new PipeRequestChannel(proxyDirector, this, clientSocketChannel);
+    responsePipeChannel = new PipedResponseChannel(proxyDirector, this, clientSocketChannel);
     socketChannelMultiplexer = new SocketChannelMultiplexer(proxyDirector.getSSLThreadPool(), proxyDirector.getLogger());
   }
 
@@ -164,7 +167,10 @@ class HttpExchangeChannel
     }
     else
     {
-      // TODO Error
+      if (log != null)
+      {
+        log.error("Received onReadReady() event with invalid selection key.");
+      }
     }
   }
 
@@ -215,7 +221,10 @@ class HttpExchangeChannel
     }
     else
     {
-      // TODO error
+      if (log != null)
+      {
+        log.error("Received onWriteReady() event with invalid selection key.");
+      }
     }
   }
 
@@ -271,8 +280,7 @@ class HttpExchangeChannel
         clientSocketChannel.close();
       }
       catch (Exception e)
-      {
-      }
+      {}
     }
 
     socketChannelMultiplexer.closeQuitely();

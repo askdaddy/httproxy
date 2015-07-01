@@ -21,13 +21,13 @@ import static org.baswell.httproxy.Constants.*;
 /**
  * An HTTP header.
  */
-public class Header
+public class HttpHeader
 {
-  public final String name;
+  public String name;
 
-  public final String value;
+  public String value;
 
-  public Header(String name, String value)
+  public HttpHeader(String name, String value)
   {
     this.name = name;
     this.value = value;

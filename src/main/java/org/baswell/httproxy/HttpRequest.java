@@ -66,7 +66,7 @@ public class HttpRequest extends HttpMessage
   public List<HttpCookie> getCookies()
   {
     List<HttpCookie> cookies = new ArrayList<HttpCookie>();
-    for (Header cookieHeader : getHeaders("Cookie"))
+    for (HttpHeader cookieHeader : getHeaders("Cookie"))
     {
       try
       {
@@ -80,7 +80,7 @@ public class HttpRequest extends HttpMessage
 
   public void addCookie(HttpCookie cookie)
   {
-    headers.add(new Header("Cookie", cookie.toString()));
+    headers.add(new HttpHeader("Cookie", cookie.toString()));
   }
 
   @Override

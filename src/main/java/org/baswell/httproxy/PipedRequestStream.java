@@ -21,9 +21,9 @@ import java.io.OutputStream;
 
 import static org.baswell.httproxy.HttpMessageStreamMethods.*;
 
-public class HttpRequestPipeStream extends HttpRequestPipe
+public class PipedRequestStream extends PipedRequest
 {
-  private final HttpExchangeStream exchangeStream;
+  private final PipedExchangeStream exchangeStream;
 
   private final InputStream inputStream;
 
@@ -33,7 +33,7 @@ public class HttpRequestPipeStream extends HttpRequestPipe
 
   OutputStream currentOutputStream;
 
-  HttpRequestPipeStream(IOProxyDirector proxyDirector, HttpExchangeStream exchangeStream, InputStream inputStream)
+  PipedRequestStream(IOProxyDirector proxyDirector, PipedExchangeStream exchangeStream, InputStream inputStream)
   {
     super(proxyDirector);
     this.exchangeStream = exchangeStream;

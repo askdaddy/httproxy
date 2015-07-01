@@ -20,9 +20,9 @@ import java.nio.channels.SocketChannel;
 
 import static org.baswell.httproxy.HttpMessageChannelMethods.*;
 
-public class HttpRequestPipeChannel extends HttpRequestPipe
+public class PipeRequestChannel extends PipedRequest
 {
-  private final HttpExchangeChannel exchangeChannel;
+  private final PipedExchangeChannel pipedExchangeChannel;
 
   private final SocketChannel readChannel;
 
@@ -30,11 +30,11 @@ public class HttpRequestPipeChannel extends HttpRequestPipe
 
   SocketChannel currentWriteChannel;
 
-  HttpRequestPipeChannel(NIOProxyDirector proxyDirector, HttpExchangeChannel exchangeChannel, SocketChannel readChannel)
+  PipeRequestChannel(NIOProxyDirector proxyDirector, PipedExchangeChannel pipedExchangeChannel, SocketChannel readChannel)
   {
     super(proxyDirector);
 
-    this.exchangeChannel = exchangeChannel;
+    this.pipedExchangeChannel = pipedExchangeChannel;
     this.readChannel = readChannel;
     this.maxWriteAttempts = proxyDirector.getMaxWriteAttempts();
   }
@@ -54,12 +54,12 @@ public class HttpRequestPipeChannel extends HttpRequestPipe
   void onRequest(HttpRequest request) throws EndProxiedRequestException, IOException
   {
     writeBuffer.add(currentRequest.toBytes());
-    exchangeChannel.onRequest();
+    pipedExchangeChannel.onRequest();
   }
 
   @Override
   void onMessageDone()
   {
-    exchangeChannel.onRequestDone();
+    pipedExchangeChannel.onRequestDone();
   }
 }

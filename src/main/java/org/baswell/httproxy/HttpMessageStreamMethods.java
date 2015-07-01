@@ -22,7 +22,7 @@ import java.nio.ByteBuffer;
 
 class HttpMessageStreamMethods
 {
-  static void doReadAndWriteMessage(HttpMessagePipe messagePipe, InputStream inputStream, byte[] readBytes, int sleepSecondsOnReadWait) throws ProxiedIOException, HttpProtocolException, EndProxiedRequestException
+  static void doReadAndWriteMessage(PipedMessage messagePipe, InputStream inputStream, byte[] readBytes, int sleepSecondsOnReadWait) throws ProxiedIOException, HttpProtocolException, EndProxiedRequestException
   {
     try
     {
@@ -52,7 +52,7 @@ class HttpMessageStreamMethods
           messagePipe.readAndWriteBuffer();
         }
 
-        if (messagePipe.readState == HttpMessagePipe.ReadState.DONE)
+        if (messagePipe.readState == PipedMessage.ReadState.DONE)
         {
           break;
         }
@@ -64,7 +64,7 @@ class HttpMessageStreamMethods
     }
   }
 
-  static boolean doWrite(HttpMessagePipe messagePipe, OutputStream outputStream, byte[] readBytes) throws ProxiedIOException
+  static boolean doWrite(PipedMessage messagePipe, OutputStream outputStream, byte[] readBytes) throws ProxiedIOException
   {
     try
     {

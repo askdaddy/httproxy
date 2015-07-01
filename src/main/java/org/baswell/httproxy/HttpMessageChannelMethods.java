@@ -23,7 +23,7 @@ import java.nio.channels.SocketChannel;
 
 public class HttpMessageChannelMethods
 {
-  static boolean doReadAndWriteAvailabe(HttpMessagePipe messagePipe, ByteBuffer readBuffer, SocketChannel readChannel) throws ProxiedIOException, HttpProtocolException, EndProxiedRequestException
+  static boolean doReadAndWriteAvailabe(PipedMessage messagePipe, ByteBuffer readBuffer, SocketChannel readChannel) throws ProxiedIOException, HttpProtocolException, EndProxiedRequestException
   {
     try
     {
@@ -69,7 +69,7 @@ public class HttpMessageChannelMethods
     }
   }
 
-  static boolean doWrite(HttpMessagePipe messagePipe, SocketChannel writeChannel, TByteList writeBuffer, ByteBuffer readBuffer, int maxWriteAttempts) throws ProxiedIOException
+  static boolean doWrite(PipedMessage messagePipe, SocketChannel writeChannel, TByteList writeBuffer, ByteBuffer readBuffer, int maxWriteAttempts) throws ProxiedIOException
   {
     try
     {

@@ -17,13 +17,13 @@ package org.baswell.httproxy;
 
 import java.io.IOException;
 
-abstract class HttpResponsePipe extends HttpMessagePipe
+abstract public class PipedRequest extends PipedMessage
 {
-  abstract void onResponse(HttpResponse response) throws IOException, EndProxiedRequestException;
+  abstract void onRequest(HttpRequest request) throws EndProxiedRequestException, IOException;
 
-  HttpResponse currentResponse;
+  HttpRequest currentRequest;
 
-  HttpResponsePipe(ProxyDirector proxyDirector)
+  PipedRequest(ProxyDirector proxyDirector)
   {
     super(proxyDirector);
   }
@@ -35,14 +35,14 @@ abstract class HttpResponsePipe extends HttpMessagePipe
     if (statusLine != null)
     {
       readBuffer.mark();
-      currentMessage = currentResponse = new HttpResponse(new String(statusLine).trim());
+      currentMessage = currentRequest = new HttpRequest(new String(statusLine).trim());
       readState = ReadState.READING_HEADER;
     }
   }
 
   @Override
-  void onHeadersProcessed() throws IOException, EndProxiedRequestException
+  void onHeadersProcessed() throws EndProxiedRequestException, IOException
   {
-    onResponse(currentResponse);
+    onRequest(currentRequest);
   }
 }
