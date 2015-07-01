@@ -8,11 +8,11 @@ import static org.baswell.httproxy.HttpMessageChannelMethods.*;
 
 public class HttpResponsePipeChannel extends HttpResponsePipe
 {
-  final HttpExchangeChannel exchangeChannel;
+  private final HttpExchangeChannel exchangeChannel;
 
-  final SocketChannel writeChannel;
+  private final SocketChannel writeChannel;
 
-  final int maxWriteAttempts;
+  private final int maxWriteAttempts;
 
   SocketChannel currentReadChannel;
 
@@ -31,7 +31,7 @@ public class HttpResponsePipeChannel extends HttpResponsePipe
   }
 
   @Override
-  protected boolean write() throws ProxiedIOException
+  boolean write() throws ProxiedIOException
   {
     return doWrite(this, writeChannel, writeBuffer, readBuffer, maxWriteAttempts);
   }

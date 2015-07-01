@@ -15,9 +15,6 @@
  */
 package org.baswell.httproxy;
 
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.nio.channels.SocketChannel;
 import java.util.concurrent.ExecutorService;
 
 /**

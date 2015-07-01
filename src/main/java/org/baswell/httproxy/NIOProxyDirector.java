@@ -15,8 +15,6 @@
  */
 package org.baswell.httproxy;
 
-import java.io.IOException;
-import java.nio.channels.SocketChannel;
 import java.util.concurrent.ExecutorService;
 
 /**
@@ -31,5 +29,8 @@ public interface NIOProxyDirector extends ProxyDirector
    */
   int getMaxWriteAttempts();
 
+  /**
+   * @return The thread pool used to execute long running SSL operations (like CA verification). Can be null if not using SSL connections.
+   */
   ExecutorService getSSLThreadPool();
 }

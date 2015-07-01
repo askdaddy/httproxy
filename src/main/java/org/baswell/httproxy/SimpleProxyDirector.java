@@ -49,24 +49,24 @@ abstract public class SimpleProxyDirector implements ProxyDirector
   }
 
   @Override
-  public ConnectionParameters onRequest(HttpRequest httpRequest) throws EndProxiedRequestException
+  public ConnectionParameters onRequestStart(HttpRequest httpRequest) throws EndProxiedRequestException
   {
     System.out.println("--> " + httpRequest.getStatusLine());
     return connectionParameters;
   }
 
   @Override
-  public void onRequestDone(HttpRequest httpRequest, ConnectionParameters connectionParameters)
+  public void onRequestEnd(HttpRequest httpRequest, ConnectionParameters connectionParameters)
   {}
 
   @Override
-  public void onResponse(HttpRequest httpRequest, HttpResponse response, ConnectionParameters connectionParameters)
+  public void onResponseStart(HttpRequest httpRequest, HttpResponse httpResponse, ConnectionParameters connectionParameters)
   {
-    System.out.println(" <-- " + response.getStatusLine());
+    System.out.println(" <-- " + httpResponse.getStatusLine());
   }
 
   @Override
-  public void onExchangeComplete(HttpRequest httpRequest, HttpResponse response, ConnectionParameters connectionParameters)
+  public void onResponseEnd(HttpRequest httpRequest, HttpResponse response, ConnectionParameters connectionParameters)
   {}
 
   @Override

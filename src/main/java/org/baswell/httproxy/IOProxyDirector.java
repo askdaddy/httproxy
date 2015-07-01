@@ -15,10 +15,6 @@
  */
 package org.baswell.httproxy;
 
-import java.io.IOException;
-import java.net.Socket;
-
-
 /**
  * A ProxyDirector for blocking IO. All implementations of this interface <strong>must be thread-safe</strong>.
  */

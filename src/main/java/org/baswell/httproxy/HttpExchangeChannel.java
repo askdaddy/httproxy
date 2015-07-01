@@ -21,31 +21,30 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
 
 class HttpExchangeChannel
 {
-  final SelectorLoop selectorLoop;
+  private final SelectorLoop selectorLoop;
 
-  final SocketChannel clientSocketChannel;
+  private final SocketChannel clientSocketChannel;
 
-  final HttpRequestPipeChannel requestPipeChannel;
+  private final HttpRequestPipeChannel requestPipeChannel;
 
-  final HttpResponsePipeChannel responsePipeChannel;
+  private final HttpResponsePipeChannel responsePipeChannel;
 
-  final SelectionKey requestSelectionKey;
+  private final SelectionKey requestSelectionKey;
 
-  final NIOProxyDirector proxyDirector;
+  private final NIOProxyDirector proxyDirector;
 
-  final SocketChannelMultiplexer socketChannelMultiplexer;
+  private final SocketChannelMultiplexer socketChannelMultiplexer;
 
-  boolean connectingServerChannel;
+  private boolean connectingServerChannel;
 
-  final Map<ConnectionParameters, SelectionKey> responseSelectionKeys = new HashMap<ConnectionParameters, SelectionKey>();
+  private final Map<ConnectionParameters, SelectionKey> responseSelectionKeys = new HashMap<ConnectionParameters, SelectionKey>();
 
-  SelectionKey currentResponseSelectionKey;
+  private SelectionKey currentResponseSelectionKey;
 
-  ConnectionParameters currentConnectionParameters;
+  private ConnectionParameters currentConnectionParameters;
 
   HttpExchangeChannel(SelectorLoop selectorLoop, SocketChannel clientSocketChannel, NIOProxyDirector proxyDirector) throws IOException
   {
@@ -224,7 +223,7 @@ class HttpExchangeChannel
   {
     connectingServerChannel = true;
 
-    currentConnectionParameters = proxyDirector.onRequest(requestPipeChannel.currentRequest);
+    currentConnectionParameters = proxyDirector.onRequestStart(requestPipeChannel.currentRequest);
     if (currentConnectionParameters == null)
     {
       throw EndProxiedRequestException.NOT_FOUND;
@@ -250,17 +249,17 @@ class HttpExchangeChannel
 
   void onRequestDone()
   {
-    proxyDirector.onRequestDone(requestPipeChannel.currentRequest, currentConnectionParameters);
+    proxyDirector.onRequestEnd(requestPipeChannel.currentRequest, currentConnectionParameters);
   }
 
   void onResponse()
   {
-    proxyDirector.onResponse(requestPipeChannel.currentRequest, responsePipeChannel.currentResponse, currentConnectionParameters);
+    proxyDirector.onResponseStart(requestPipeChannel.currentRequest, responsePipeChannel.currentResponse, currentConnectionParameters);
   }
 
   void onResponseDone()
   {
-    proxyDirector.onExchangeComplete(requestPipeChannel.currentRequest, responsePipeChannel.currentResponse, currentConnectionParameters);
+    proxyDirector.onResponseEnd(requestPipeChannel.currentRequest, responsePipeChannel.currentResponse, currentConnectionParameters);
   }
 
   void close()

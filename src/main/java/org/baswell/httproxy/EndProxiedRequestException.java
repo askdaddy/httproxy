@@ -22,8 +22,7 @@ import static org.baswell.httproxy.Constants.*;
 
 /**
  * <p>
- * When thrown from {@link NIOProxyDirector#connectToProxiedHost(ProxiedRequest)} or {@link IOProxyDirector#connectToProxiedHost(ProxiedRequest)} methods the response code
- * will be returned to the client and the connection closed.
+ * When thrown from {@link ProxyDirector#onRequestStart(HttpRequest)} methods the response code will be returned to the client and the connection closed.
  * </p>
  */
 public class EndProxiedRequestException extends Exception

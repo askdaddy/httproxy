@@ -30,49 +30,66 @@ public interface ProxyDirector
   int getBufferSize();
 
   /**
-   * The socket connection parameters for the given proxied httpRequest. If <code>null</code> is a returned a 404 will be
+   * Before the given HTTP request is sent to the server. The HTTP request (status line and headers) can be modified here
+   * before it is sent to the server.
+   *
+   * @param httpRequest The HTTP request.
+   * @return The server connection the given httpRequest will be proxied to. If <code>null</code> is a returned a 404 will be
    * returned to the client.
-   *
-   * The proxied httpRequest can
-   *
-   * @param httpRequest The proxied httpRequest.
-   * @return The server connection the given httpRequest will be proxied to.
    * @throws EndProxiedRequestException To return the provided HTTP status and message and end the proxied the httpRequest.
    */
-  ConnectionParameters onRequest(HttpRequest httpRequest) throws EndProxiedRequestException;
-
-  void onRequestDone(HttpRequest httpRequest, ConnectionParameters connectionParameters);
-
-  void onResponse(HttpRequest httpRequest, HttpResponse response, ConnectionParameters connectionParameters);
+  ConnectionParameters onRequestStart(HttpRequest httpRequest) throws EndProxiedRequestException;
 
   /**
-   * Called when an httpRequest-response exchange has been completed.
-   * @param httpRequest The proxied httpRequest.
-   * @param response The proxied response.
-   */
-  void onExchangeComplete(HttpRequest httpRequest, HttpResponse response, ConnectionParameters connectionParameters);
-
-  /**
-   * Called when a httpRequest could not be correctly parsed.
+   * After the given HTTP request has been sent to the server (including body). Modifying the given HTTP request here will
+   * have no impact as the request has already been sent.
    *
-   * @param httpRequest The proxied httpRequest.
+   * @param httpRequest The HTTP request sent to the server.
+   * @param connectionParameters The connection parameters used for the server.
+   */
+  void onRequestEnd(HttpRequest httpRequest, ConnectionParameters connectionParameters);
+
+  /**
+   * Before the given HTTP response is sent back to the client.. The HTTP response (status line and headers) can be modified here
+   * before it is sent back to the client.
+   *
+   * @param httpRequest The HTTP request that produced the given response.
+   * @param httpResponse The HTTP response.
+   * @param connectionParameters The connection parameters used to connect to the server for this response.
+   */
+  void onResponseStart(HttpRequest httpRequest, HttpResponse httpResponse, ConnectionParameters connectionParameters);
+
+  /**
+   * After the given HTTP response has been sent to the client (including body). Modifying the given HTTP response here will
+   * have no impact as the response has already been sent.
+   *
+   * @param httpRequest The HTTP request that produced the given response.
+   * @param httpResponse The HTTP response.
+   * @param connectionParameters The connection parameters used to connect to the server for this response.
+   */
+  void onResponseEnd(HttpRequest httpRequest, HttpResponse httpResponse, ConnectionParameters connectionParameters);
+
+  /**
+   * Called when a HTTP request could not be correctly parsed.
+   *
+   * @param httpRequest The HTTP request. May be null.
    * @param errorDescription A description of the protocol error.
    */
   void onRequestHttpProtocolError(HttpRequest httpRequest, String errorDescription);
 
   /**
-   * Called when a response could not be correctly parsed.
+   * Called when a HTTP response could not be correctly parsed.
    *
-   * @param httpRequest The proxied httpRequest.
-   * @param response The proxied response.
+   * @param httpRequest The HTTP request that produced the given response.
+   * @param httpResponse The HTTP response. May be null.
    * @param errorDescription A description of the protocol error.
    */
-  void onResponseHttpProtocolError(HttpRequest httpRequest, HttpResponse response, ConnectionParameters connectionParameters, String errorDescription);
+  void onResponseHttpProtocolError(HttpRequest httpRequest, HttpResponse httpResponse, ConnectionParameters connectionParameters, String errorDescription);
 
   /**
-   * Called when the client connection was closed before the httpRequest was fully read or the response was returned.
+   * Called when the client connection was closed before the HTTP request was fully read or the response was returned.
    *
-   * @param httpRequest The proxied httpRequest.
+   * @param httpRequest The HTTP request. May be null.
    * @param e The IO exception that signaled the close.
    */
   void onPrematureRequestClosed(HttpRequest httpRequest, IOException e);
@@ -80,11 +97,11 @@ public interface ProxyDirector
   /**
    * Called when the server connection was closed before a response was retrieved.
    *
-   * @param httpRequest The proxied httpRequest.
-   * @param response The proxied response.
+   * @param httpRequest The HTTP request that produced the given response.
+   * @param httpResponse The HTTP response. May be null.
    * @param e The IO exception that signaled the close.
    */
-  void onPrematureResponseClosed(HttpRequest httpRequest, HttpResponse response, ConnectionParameters connectionParameters, IOException e);
+  void onPrematureResponseClosed(HttpRequest httpRequest, HttpResponse httpResponse, ConnectionParameters connectionParameters, IOException e);
 
   /**
    * The logger used by the HttProxy runtime.

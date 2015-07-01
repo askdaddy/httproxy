@@ -15,9 +15,6 @@
  */
 package org.baswell.httproxy;
 
-import java.io.IOException;
-import java.net.Socket;
-
 /**
  * A simple IOProxyDirector that proxies to a single server and prints out proxy events.
  */

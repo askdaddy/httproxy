@@ -20,21 +20,21 @@ import java.net.Socket;
 
 class HttpExchangeStream
 {
-  final Socket clientSocket;
+  private final Socket clientSocket;
 
-  final IOProxyDirector proxyDirector;
+  private final IOProxyDirector proxyDirector;
 
-  final HttpRequestPipeStream requestPipeStream;
+  private final HttpRequestPipeStream requestPipeStream;
 
-  final HttpResponsePipeStream responsePipeStream;
+  private final HttpResponsePipeStream responsePipeStream;
 
-  final SocketMultiplexer socketMultiplexer;
+  private final SocketMultiplexer socketMultiplexer;
 
-  ConnectionParameters currentConnectionParameters;
+  private ConnectionParameters currentConnectionParameters;
 
-  volatile boolean connectingServerSocket;
+  private volatile boolean connectingServerSocket;
 
-  volatile boolean closed;
+  private volatile boolean closed;
 
   HttpExchangeStream(Socket clientSocket, IOProxyDirector proxyDirector) throws IOException
   {
@@ -170,7 +170,7 @@ class HttpExchangeStream
 
   void onRequest() throws EndProxiedRequestException, IOException
   {
-    currentConnectionParameters = proxyDirector.onRequest(requestPipeStream.currentRequest);
+    currentConnectionParameters = proxyDirector.onRequestStart(requestPipeStream.currentRequest);
     if (currentConnectionParameters == null)
     {
       throw EndProxiedRequestException.NOT_FOUND;
@@ -193,18 +193,18 @@ class HttpExchangeStream
 
   void onRequestDone()
   {
-    proxyDirector.onRequestDone(requestPipeStream.currentRequest, currentConnectionParameters);
+    proxyDirector.onRequestEnd(requestPipeStream.currentRequest, currentConnectionParameters);
     requestPipeStream.currentOutputStream = null;
   }
 
   void onResponse() throws EndProxiedRequestException, IOException
   {
-    proxyDirector.onResponse(requestPipeStream.currentRequest, responsePipeStream.currentResponse, currentConnectionParameters);
+    proxyDirector.onResponseStart(requestPipeStream.currentRequest, responsePipeStream.currentResponse, currentConnectionParameters);
   }
 
   void onResponseDone()
   {
-    proxyDirector.onExchangeComplete(requestPipeStream.currentRequest, responsePipeStream.currentResponse, currentConnectionParameters);
+    proxyDirector.onResponseEnd(requestPipeStream.currentRequest, responsePipeStream.currentResponse, currentConnectionParameters);
     responsePipeStream.currentInputStream = null;
   }
 

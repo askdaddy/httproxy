@@ -1,7 +1,6 @@
 package org.baswell.httproxy;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * SLF4J logger bridge for the HttProxy runtime.
