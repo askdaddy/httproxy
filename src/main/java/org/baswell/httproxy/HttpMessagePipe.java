@@ -139,6 +139,7 @@ abstract class HttpMessagePipe
       else
       {
         onHeadersProcessed();
+        readBuffer.mark();
 
         if ((chunkedTerminatorState != null))
         {
