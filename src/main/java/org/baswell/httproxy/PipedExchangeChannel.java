@@ -253,6 +253,7 @@ class PipedExchangeChannel
     }
 
     requestPipeChannel.currentWriteChannel = responsePipeChannel.currentReadChannel = serverSocketChannel;
+    responsePipeChannel.overSSL = currentConnectionParameters.ssl;
     connectingServerChannel = false;
   }
 

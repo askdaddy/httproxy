@@ -33,6 +33,8 @@ public class PipedResponseStream extends PipedResponse
 
   InputStream currentInputStream;
 
+  boolean overSSL;
+
   PipedResponseStream(IOProxyDirector proxyDirector, PipedExchangeStream exchangeStream, OutputStream outputStream)
   {
     super(proxyDirector);
@@ -66,5 +68,11 @@ public class PipedResponseStream extends PipedResponse
   void onMessageDone() throws IOException
   {
     exchangeStream.onResponseDone();
+  }
+
+  @Override
+  boolean overSSL()
+  {
+    return overSSL;
   }
 }

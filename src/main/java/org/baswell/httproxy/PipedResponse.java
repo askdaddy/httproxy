@@ -19,9 +19,13 @@ import java.io.IOException;
 
 abstract class PipedResponse extends PipedMessage
 {
+  abstract boolean overSSL();
+
   abstract void onResponse(HttpResponse response) throws IOException, EndProxiedRequestException;
 
   HttpResponse currentResponse;
+
+  boolean firstInExchange = true;
 
   PipedResponse(ProxyDirector proxyDirector)
   {
@@ -35,7 +39,8 @@ abstract class PipedResponse extends PipedMessage
     if (statusLine != null)
     {
       readBuffer.mark();
-      currentMessage = currentResponse = new HttpResponse(new String(statusLine).trim());
+      currentMessage = currentResponse = new HttpResponse(firstInExchange, overSSL(), new String(statusLine).trim());
+      firstInExchange = false;
       readState = ReadState.READING_HEADER;
     }
   }

@@ -24,7 +24,11 @@ public class PipeRequestChannel extends PipedRequest
 {
   private final PipedExchangeChannel pipedExchangeChannel;
 
+  private final String clientIp;
+
   private final SocketChannel readChannel;
+
+  private final boolean overSSL;
 
   private final int maxWriteAttempts;
 
@@ -37,6 +41,9 @@ public class PipeRequestChannel extends PipedRequest
     this.pipedExchangeChannel = pipedExchangeChannel;
     this.readChannel = readChannel;
     this.maxWriteAttempts = proxyDirector.getMaxWriteAttempts();
+
+    clientIp = readChannel.socket().getRemoteSocketAddress().toString();
+    overSSL = readChannel instanceof SSLSocketChannel; // TODO This isn't complete. How do we know for sure ?
   }
 
   boolean readAndWriteAvailabe() throws ProxiedIOException, HttpProtocolException, EndProxiedRequestException
@@ -61,5 +68,17 @@ public class PipeRequestChannel extends PipedRequest
   void onMessageDone()
   {
     pipedExchangeChannel.onRequestDone();
+  }
+
+  @Override
+  String getClientIp()
+  {
+    return clientIp;
+  }
+
+  @Override
+  boolean overSSL()
+  {
+    return overSSL;
   }
 }

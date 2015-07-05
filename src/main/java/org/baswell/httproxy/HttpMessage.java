@@ -24,7 +24,7 @@ import static org.baswell.httproxy.Constants.*;
 
 abstract public class HttpMessage
 {
-  abstract String getStatusLine();
+  abstract public String getStatusLine();
 
   public final Date startedAt = new Date();
 
@@ -75,6 +75,20 @@ abstract public class HttpMessage
     }
 
     return null;
+  }
+
+  public void setOrAddHeader(String name, String value)
+  {
+    for (HttpHeader header : headers)
+    {
+      if (header.name.equalsIgnoreCase(name))
+      {
+        header.value = value;
+        return;
+      }
+    }
+
+    headers.add(new HttpHeader(name, value));
   }
 
   @Override

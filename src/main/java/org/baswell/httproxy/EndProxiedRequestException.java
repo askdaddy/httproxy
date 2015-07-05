@@ -96,6 +96,18 @@ public class EndProxiedRequestException extends Exception
   }
 
   /**
+   * <p>Shortcut for returning redirect 302 to the given uri.</p>
+   *
+   * <pre>
+   * throw ReturnHttpResponseStatus.redirectPermanently("https://test.org/helloworld");
+   * </pre>
+   */
+  public static EndProxiedRequestException redirectTemporarily(String uri)
+  {
+    return new EndProxiedRequestException(302, "Moved Temporarily", Arrays.asList(new HttpHeader("Location", uri)));
+  }
+
+  /**
    * The HTTP status to return.
    */
   public final int code;

@@ -15,9 +15,11 @@
  */
 package org.baswell.httproxy;
 
+import javax.net.ssl.SSLSocket;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.Socket;
 
 import static org.baswell.httproxy.HttpMessageStreamMethods.*;
 
@@ -25,7 +27,11 @@ public class PipedRequestStream extends PipedRequest
 {
   private final PipedExchangeStream exchangeStream;
 
+  private final String clientIp;
+
   private final InputStream inputStream;
+
+  private final boolean overSSL;
 
   private final byte[] readBytes;
 
@@ -33,11 +39,14 @@ public class PipedRequestStream extends PipedRequest
 
   OutputStream currentOutputStream;
 
-  PipedRequestStream(IOProxyDirector proxyDirector, PipedExchangeStream exchangeStream, InputStream inputStream)
+  PipedRequestStream(IOProxyDirector proxyDirector, PipedExchangeStream exchangeStream, Socket clientSocket) throws IOException
   {
     super(proxyDirector);
     this.exchangeStream = exchangeStream;
-    this.inputStream= inputStream;
+
+    clientIp = clientSocket.getRemoteSocketAddress().toString();
+    inputStream= clientSocket.getInputStream();
+    overSSL = clientSocket instanceof SSLSocket;
 
     readBytes = new byte[bufferSize];
     sleepSecondsOnReadWait = proxyDirector.getSleepSecondsOnReadWait();
@@ -65,5 +74,17 @@ public class PipedRequestStream extends PipedRequest
   void onMessageDone() throws IOException
   {
     exchangeStream.onRequestDone();
+  }
+
+  @Override
+  String getClientIp()
+  {
+    return clientIp;
+  }
+
+  @Override
+  public boolean overSSL()
+  {
+    return overSSL;
   }
 }

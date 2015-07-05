@@ -19,14 +19,21 @@ import java.net.HttpCookie;
 
 public class HttpResponse extends HttpMessage
 {
+  public final boolean firstInExchange;
+
+  public final boolean overSSL;
+
   public String version;
 
   public int statusCode;
 
   public String reasonPhrase;
 
-  public HttpResponse(String responseLine)
+  public HttpResponse(boolean firstInExchange, boolean overSSL, String responseLine)
   {
+    this.firstInExchange = firstInExchange;
+    this.overSSL = overSSL;
+
     String[] values = new String(responseLine).trim().split(" ");
     for (int i = 0; i < values.length; i++)
     {
@@ -66,7 +73,7 @@ public class HttpResponse extends HttpMessage
   }
 
   @Override
-  String getStatusLine()
+  public String getStatusLine()
   {
     return version + " " + statusCode + " " + reasonPhrase;
   }

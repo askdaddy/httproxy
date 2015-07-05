@@ -21,14 +21,24 @@ import java.util.List;
 
 public class HttpRequest extends HttpMessage
 {
+  public final String clientIp;
+
+  public final boolean firstInExchange;
+
+  public final boolean overSSL;
+
   public String method;
 
   public String path;
 
   public String version;
 
-  public HttpRequest(String requestLine)
+  public HttpRequest(String clientIp, boolean firstInExchange, boolean overSSL, String requestLine)
   {
+    this.clientIp = clientIp;
+    this.firstInExchange = firstInExchange;
+    this.overSSL = overSSL;
+
     String[] values = new String(requestLine).trim().split(" ");
     for (int i = 0; i < values.length; i++)
     {
@@ -84,7 +94,7 @@ public class HttpRequest extends HttpMessage
   }
 
   @Override
-  String getStatusLine()
+  public String getStatusLine()
   {
     return method + " " + path + " " + version;
   }

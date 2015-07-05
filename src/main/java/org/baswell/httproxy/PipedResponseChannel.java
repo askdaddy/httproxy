@@ -16,6 +16,8 @@ public class PipedResponseChannel extends PipedResponse
 
   SocketChannel currentReadChannel;
 
+  boolean overSSL;
+
   PipedResponseChannel(NIOProxyDirector proxyDirector, PipedExchangeChannel pipedExchangeChannel, SocketChannel writeChannel)
   {
     super(proxyDirector);
@@ -48,4 +50,11 @@ public class PipedResponseChannel extends PipedResponse
   {
     pipedExchangeChannel.onRequestDone();
   }
+
+  @Override
+  boolean overSSL()
+  {
+    return overSSL;
+  }
+
 }

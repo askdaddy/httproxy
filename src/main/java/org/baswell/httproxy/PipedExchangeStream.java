@@ -15,6 +15,7 @@
  */
 package org.baswell.httproxy;
 
+import javax.net.ssl.SSLSocket;
 import java.io.IOException;
 import java.net.Socket;
 
@@ -42,7 +43,7 @@ class PipedExchangeStream
     this.proxyDirector = proxyDirector;
 
 
-    requestPipeStream = new PipedRequestStream(proxyDirector, this, clientSocket.getInputStream());
+    requestPipeStream = new PipedRequestStream(proxyDirector, this, clientSocket);
     responsePipeStream = new PipedResponseStream(proxyDirector, this, clientSocket.getOutputStream());
 
     socketMultiplexer = new SocketMultiplexer();
@@ -179,11 +180,13 @@ class PipedExchangeStream
     {
       connectingServerSocket = true;
       Socket serverSocket = socketMultiplexer.getConnectionFor(currentConnectionParameters);
-      connectingServerSocket = false;
+
       requestPipeStream.currentOutputStream = serverSocket.getOutputStream();
+
       responsePipeStream.currentInputStream = serverSocket.getInputStream();
+      responsePipeStream.overSSL = currentConnectionParameters.ssl;
 
-
+      connectingServerSocket = false;
       synchronized (this)
       {
         notifyAll();
