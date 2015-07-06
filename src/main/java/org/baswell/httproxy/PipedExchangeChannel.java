@@ -28,7 +28,7 @@ class PipedExchangeChannel
 
   private final SocketChannel clientSocketChannel;
 
-  private final PipeRequestChannel requestPipeChannel;
+  private final PipedRequestChannel requestPipeChannel;
 
   private final PipedResponseChannel responsePipeChannel;
 
@@ -70,7 +70,7 @@ class PipedExchangeChannel
     requestSelectionKey = realSocketChannel.register(selectorLoop.selector, SelectionKey.OP_READ);
     requestSelectionKey.attach(this);
 
-    requestPipeChannel = new PipeRequestChannel(proxyDirector, this, clientSocketChannel);
+    requestPipeChannel = new PipedRequestChannel(proxyDirector, this, clientSocketChannel);
     responsePipeChannel = new PipedResponseChannel(proxyDirector, this, clientSocketChannel);
     socketChannelMultiplexer = new SocketChannelMultiplexer(proxyDirector.getSSLThreadPool(), proxyDirector.getLogger());
   }

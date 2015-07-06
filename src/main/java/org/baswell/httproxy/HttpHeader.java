@@ -35,9 +35,9 @@ public class HttpHeader
 
   void addTo(TByteArrayList bytes)
   {
-    bytes.add(name.getBytes());
+    if (name != null) bytes.add(name.getBytes());
     bytes.add(": ".getBytes());
-    bytes.add(value.getBytes());
+    if (value != null) bytes.add(value.getBytes());
     bytes.add(CR);
     bytes.add(LF);
   }

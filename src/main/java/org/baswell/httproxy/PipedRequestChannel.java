@@ -20,7 +20,7 @@ import java.nio.channels.SocketChannel;
 
 import static org.baswell.httproxy.HttpMessageChannelMethods.*;
 
-public class PipeRequestChannel extends PipedRequest
+public class PipedRequestChannel extends PipedRequest
 {
   private final PipedExchangeChannel pipedExchangeChannel;
 
@@ -34,7 +34,7 @@ public class PipeRequestChannel extends PipedRequest
 
   SocketChannel currentWriteChannel;
 
-  PipeRequestChannel(NIOProxyDirector proxyDirector, PipedExchangeChannel pipedExchangeChannel, SocketChannel readChannel)
+  PipedRequestChannel(NIOProxyDirector proxyDirector, PipedExchangeChannel pipedExchangeChannel, SocketChannel readChannel)
   {
     super(proxyDirector);
 
@@ -42,7 +42,7 @@ public class PipeRequestChannel extends PipedRequest
     this.readChannel = readChannel;
     this.maxWriteAttempts = proxyDirector.getMaxWriteAttempts();
 
-    clientIp = readChannel.socket().getRemoteSocketAddress().toString();
+    clientIp = readChannel.socket().getInetAddress().toString();
     overSSL = readChannel instanceof SSLSocketChannel; // TODO This isn't complete. How do we know for sure ?
   }
 

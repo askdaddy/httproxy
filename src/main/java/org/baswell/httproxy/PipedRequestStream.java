@@ -44,7 +44,7 @@ public class PipedRequestStream extends PipedRequest
     super(proxyDirector);
     this.exchangeStream = exchangeStream;
 
-    clientIp = clientSocket.getRemoteSocketAddress().toString();
+    clientIp = clientSocket.getInetAddress().toString();
     inputStream= clientSocket.getInputStream();
     overSSL = clientSocket instanceof SSLSocket;
 

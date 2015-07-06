@@ -48,7 +48,7 @@ public class PipedResponseChannel extends PipedResponse
   @Override
   void onMessageDone()
   {
-    pipedExchangeChannel.onRequestDone();
+    pipedExchangeChannel.onResponseDone();
   }
 
   @Override

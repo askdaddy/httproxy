@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -128,7 +129,7 @@ public class SSLServerSocketChannel extends ServerSocketChannel
 
   static String[] filterArray(String[] items, List<String> includedItems, List<String> excludedItems)
   {
-    List<String> filteredItems = Arrays.asList(items);
+    List<String> filteredItems = new ArrayList<String>(Arrays.asList(items));
     if (includedItems != null)
     {
       for (int i = filteredItems.size() - 1; i >= 0; i--)

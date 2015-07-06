@@ -39,6 +39,8 @@ class PipedExchangeStream
 
   PipedExchangeStream(Socket clientSocket, IOProxyDirector proxyDirector) throws IOException
   {
+    clientSocket.setKeepAlive(true); // Use keep alives so we know when the far end has shutdown the socket.
+
     this.clientSocket = clientSocket;
     this.proxyDirector = proxyDirector;
 
@@ -180,6 +182,7 @@ class PipedExchangeStream
     {
       connectingServerSocket = true;
       Socket serverSocket = socketMultiplexer.getConnectionFor(currentConnectionParameters);
+      serverSocket.setKeepAlive(true); // Use keep alives so we know when the far end has shutdown the socket.
 
       requestPipeStream.currentOutputStream = serverSocket.getOutputStream();
 
