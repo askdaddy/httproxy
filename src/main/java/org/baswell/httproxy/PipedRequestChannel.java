@@ -18,13 +18,11 @@ package org.baswell.httproxy;
 import java.io.IOException;
 import java.nio.channels.SocketChannel;
 
-import static org.baswell.httproxy.HttpMessageChannelMethods.*;
+import static org.baswell.httproxy.PipedMessageChannelMethods.*;
 
 public class PipedRequestChannel extends PipedRequest
 {
   private final PipedExchangeChannel pipedExchangeChannel;
-
-  private final String clientIp;
 
   private final SocketChannel readChannel;
 
@@ -42,7 +40,8 @@ public class PipedRequestChannel extends PipedRequest
     this.readChannel = readChannel;
     this.maxWriteAttempts = proxyDirector.getMaxWriteAttempts();
 
-    clientIp = readChannel.socket().getInetAddress().toString();
+    setClientIp(readChannel.socket());
+
     overSSL = readChannel instanceof SSLSocketChannel; // TODO This isn't complete. How do we know for sure ?
   }
 
@@ -68,12 +67,6 @@ public class PipedRequestChannel extends PipedRequest
   void onMessageDone()
   {
     pipedExchangeChannel.onRequestDone();
-  }
-
-  @Override
-  String getClientIp()
-  {
-    return clientIp;
   }
 
   @Override

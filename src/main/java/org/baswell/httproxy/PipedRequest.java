@@ -16,11 +16,11 @@
 package org.baswell.httproxy;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 
 abstract public class PipedRequest extends PipedMessage
 {
-  abstract String getClientIp();
-
   abstract boolean overSSL();
 
   abstract void onRequest(HttpRequest request) throws EndProxiedRequestException, IOException;
@@ -28,6 +28,8 @@ abstract public class PipedRequest extends PipedMessage
   HttpRequest currentRequest;
 
   boolean firstInExchange = true;
+
+  String clientIp;
 
   PipedRequest(ProxyDirector proxyDirector)
   {
@@ -41,7 +43,7 @@ abstract public class PipedRequest extends PipedMessage
     if (statusLine != null)
     {
       readBuffer.mark();
-      currentMessage = currentRequest = new HttpRequest(getClientIp(), firstInExchange, overSSL(), new String(statusLine).trim());
+      currentMessage = currentRequest = new HttpRequest(clientIp, firstInExchange, overSSL(), new String(statusLine).trim());
       firstInExchange = false;
       readState = ReadState.READING_HEADER;
     }
@@ -51,5 +53,10 @@ abstract public class PipedRequest extends PipedMessage
   void onHeadersProcessed() throws EndProxiedRequestException, IOException
   {
     onRequest(currentRequest);
+  }
+
+  void setClientIp(Socket socket)
+  {
+    clientIp = ((InetSocketAddress)socket.getRemoteSocketAddress()).getHostName();
   }
 }

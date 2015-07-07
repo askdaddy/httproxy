@@ -21,13 +21,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 
-import static org.baswell.httproxy.HttpMessageStreamMethods.*;
+import static org.baswell.httproxy.PipedMessageStreamMethods.*;
 
 public class PipedRequestStream extends PipedRequest
 {
   private final PipedExchangeStream exchangeStream;
-
-  private final String clientIp;
 
   private final InputStream inputStream;
 
@@ -44,9 +42,10 @@ public class PipedRequestStream extends PipedRequest
     super(proxyDirector);
     this.exchangeStream = exchangeStream;
 
-    clientIp = clientSocket.getInetAddress().toString();
     inputStream= clientSocket.getInputStream();
     overSSL = clientSocket instanceof SSLSocket;
+
+    setClientIp(clientSocket);
 
     readBytes = new byte[bufferSize];
     sleepSecondsOnReadWait = proxyDirector.getSleepSecondsOnReadWait();
@@ -72,15 +71,7 @@ public class PipedRequestStream extends PipedRequest
 
   @Override
   void onMessageDone() throws IOException
-  {
-    exchangeStream.onRequestDone();
-  }
-
-  @Override
-  String getClientIp()
-  {
-    return clientIp;
-  }
+  {}
 
   @Override
   public boolean overSSL()

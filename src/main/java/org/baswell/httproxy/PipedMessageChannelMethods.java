@@ -21,7 +21,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
-public class HttpMessageChannelMethods
+public class PipedMessageChannelMethods
 {
   static boolean doReadAndWriteAvailabe(PipedMessage messagePipe, ByteBuffer readBuffer, SocketChannel readChannel) throws ProxiedIOException, HttpProtocolException, EndProxiedRequestException
   {

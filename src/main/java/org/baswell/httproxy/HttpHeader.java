@@ -41,4 +41,10 @@ public class HttpHeader
     bytes.add(CR);
     bytes.add(LF);
   }
+
+  @Override
+  public String toString()
+  {
+    return name + ": " + value;
+  }
 }

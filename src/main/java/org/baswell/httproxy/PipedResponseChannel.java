@@ -3,7 +3,7 @@ package org.baswell.httproxy;
 import java.io.IOException;
 import java.nio.channels.SocketChannel;
 
-import static org.baswell.httproxy.HttpMessageChannelMethods.*;
+import static org.baswell.httproxy.PipedMessageChannelMethods.*;
 
 
 public class PipedResponseChannel extends PipedResponse

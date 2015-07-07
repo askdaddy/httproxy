@@ -68,8 +68,8 @@ public class SSLSocketChannel extends SocketChannel implements WrappedSocketChan
     logDebug = log != null && log.logDebugs();
 
     SSLSession session = sslEngine.getSession();
-    int applicationBufferSize = session.getApplicationBufferSize();
-    int networkBufferSize = session.getPacketBufferSize();
+    int applicationBufferSize = session.getApplicationBufferSize() * 10;
+    int networkBufferSize = session.getPacketBufferSize() * 10;
 
     networkInboundBuffer = ByteBuffer.allocate(networkBufferSize);
 
@@ -93,7 +93,7 @@ public class SSLSocketChannel extends SocketChannel implements WrappedSocketChan
   {
     int intialPosition = applicationBuffer.position();
 
-    if (applicationInboundBuffer.hasRemaining())
+    if (applicationInboundBuffer.hasRemaining() && applicationBuffer.position() < applicationBuffer.limit())
     {
       applicationBuffer.put(applicationInboundBuffer);
     }

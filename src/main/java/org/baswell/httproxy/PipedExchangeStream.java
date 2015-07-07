@@ -15,9 +15,9 @@
  */
 package org.baswell.httproxy;
 
-import javax.net.ssl.SSLSocket;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.concurrent.CountDownLatch;
 
 class PipedExchangeStream
 {
@@ -37,6 +37,8 @@ class PipedExchangeStream
 
   private volatile boolean closed;
 
+  private final CountDownLatch responseStartSignal = new CountDownLatch(1);
+
   PipedExchangeStream(Socket clientSocket, IOProxyDirector proxyDirector) throws IOException
   {
     clientSocket.setKeepAlive(true); // Use keep alives so we know when the far end has shutdown the socket.
@@ -51,42 +53,54 @@ class PipedExchangeStream
     socketMultiplexer = new SocketMultiplexer();
   }
 
-  void requestLoop()
+  synchronized void requestLoop()
   {
     try
     {
+      responseStartSignal.countDown();
       while (!closed)
       {
+        requestPipeStream.reset();
         requestPipeStream.readAndWriteMessage();
+
+        try
+        {
+          onRequestDone();
+          notifyAll();
+          if (!closed)
+          {
+            wait();
+          }
+        }
+        catch (InterruptedException e)
+        {}
+        catch (IOException e)
+        {
+          throw new ProxiedIOException(requestPipeStream.currentRequest, e);
+        }
       }
     }
     catch (ProxiedIOException proxiedIOException)
     {
-      synchronized (this)
+      if (!closed)
       {
-        if (!closed)
+        if (!connectingServerSocket)
         {
-          if (!connectingServerSocket)
+          if (!requestPipeStream.isMessageComplete() || !responsePipeStream.isMessageComplete())
           {
-            if (!requestPipeStream.isMessageComplete() || !responsePipeStream.isMessageComplete())
-            {
-              proxyDirector.onPrematureRequestClosed(requestPipeStream.currentRequest, proxiedIOException.e);
-            }
+            proxyDirector.onPrematureRequestClosed(requestPipeStream.currentRequest, proxiedIOException.e);
           }
-
-          close();
         }
+
+        close();
       }
     }
     catch (HttpProtocolException e)
     {
-      synchronized (this)
+      if (!closed)
       {
-        if (!closed)
-        {
-          proxyDirector.onRequestHttpProtocolError(requestPipeStream.currentRequest, e.getMessage());
-          close();
-        }
+        proxyDirector.onRequestHttpProtocolError(requestPipeStream.currentRequest, e.getMessage());
+        close();
       }
     }
     catch (EndProxiedRequestException e)
@@ -105,30 +119,37 @@ class PipedExchangeStream
   {
     try
     {
-      while (!closed)
+      responseStartSignal.await();
+    }
+    catch (InterruptedException e)
+    {}
+
+    synchronized (this)
+    {
+      try
       {
-        synchronized (this)
+        while (!closed)
         {
-          if (responsePipeStream.currentInputStream == null)
+          try
           {
-            try
+            responsePipeStream.reset();
+            responsePipeStream.readAndWriteMessage();
+            onResponseDone();
+            notifyAll();
+            if (!closed)
             {
               wait();
             }
-            catch (InterruptedException e)
-            {}
+          }
+          catch (InterruptedException e)
+          {}
+          catch (IOException e)
+          {
+            throw new ProxiedIOException(responsePipeStream.currentResponse, e);
           }
         }
-
-        if (!closed && responsePipeStream.currentInputStream != null)
-        {
-          responsePipeStream.readAndWriteMessage();
-        }
       }
-    }
-    catch (ProxiedIOException proxiedIOException)
-    {
-      synchronized (this)
+      catch (ProxiedIOException proxiedIOException)
       {
         if (!closed)
         {
@@ -143,10 +164,7 @@ class PipedExchangeStream
           close();
         }
       }
-    }
-    catch (HttpProtocolException e)
-    {
-      synchronized (this)
+      catch (HttpProtocolException e)
       {
         if (!closed)
         {
@@ -154,20 +172,20 @@ class PipedExchangeStream
           close();
         }
       }
-    }
-    catch (EndProxiedRequestException e)
-    {
-      /*
-       * This should never be thrown here. Only on request side from ProxyDirector when trying to connect to proxied
-       * server.
-       */
-      try
+      catch (EndProxiedRequestException e)
       {
-        clientSocket.getOutputStream().write(e.toString().getBytes());
+        /*
+         * This should never be thrown here. Only on request side from ProxyDirector when trying to connect to proxied
+         * server.
+         */
+        try
+        {
+          clientSocket.getOutputStream().write(e.toString().getBytes());
+        }
+        catch (IOException ie)
+        {}
+        close();
       }
-      catch (IOException ie)
-      {}
-      close();
     }
   }
 
@@ -190,16 +208,13 @@ class PipedExchangeStream
       responsePipeStream.overSSL = currentConnectionParameters.ssl;
 
       connectingServerSocket = false;
-      synchronized (this)
-      {
-        notifyAll();
-      }
     }
   }
 
-  void onRequestDone()
+  void onRequestDone() throws IOException
   {
     proxyDirector.onRequestEnd(requestPipeStream.currentRequest, currentConnectionParameters);
+    requestPipeStream.currentOutputStream.flush();
     requestPipeStream.currentOutputStream = null;
   }
 
@@ -208,9 +223,10 @@ class PipedExchangeStream
     proxyDirector.onResponseStart(requestPipeStream.currentRequest, responsePipeStream.currentResponse, currentConnectionParameters);
   }
 
-  void onResponseDone()
+  synchronized void onResponseDone() throws IOException
   {
     proxyDirector.onResponseEnd(requestPipeStream.currentRequest, responsePipeStream.currentResponse, currentConnectionParameters);
+    responsePipeStream.outputStream.flush();
     responsePipeStream.currentInputStream = null;
   }
 
@@ -229,7 +245,7 @@ class PipedExchangeStream
 
     synchronized (this)
     {
-      notify();
+      notifyAll();
     }
 
     socketMultiplexer.closeQuitely();

@@ -19,13 +19,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import static org.baswell.httproxy.HttpMessageStreamMethods.*;
+import static org.baswell.httproxy.PipedMessageStreamMethods.*;
 
 public class PipedResponseStream extends PipedResponse
 {
   private final PipedExchangeStream exchangeStream;
 
-  private final OutputStream outputStream;
+  final OutputStream outputStream;
 
   private final byte[] readBytes;
 
@@ -66,9 +66,7 @@ public class PipedResponseStream extends PipedResponse
 
   @Override
   void onMessageDone() throws IOException
-  {
-    exchangeStream.onResponseDone();
-  }
+  {}
 
   @Override
   boolean overSSL()

@@ -107,9 +107,14 @@ abstract class PipedMessage
     return write();
   }
 
+  boolean isReadComplete()
+  {
+    return readState == ReadState.DONE;
+  }
+
   boolean isMessageComplete()
   {
-    return (readState == ReadState.DONE) && ((writeBuffer == null) || writeBuffer.isEmpty());
+    return isReadComplete() && (writeBuffer == null || writeBuffer.isEmpty());
   }
 
   void readHeaderLine() throws HttpProtocolException, IOException, EndProxiedRequestException
@@ -130,7 +135,7 @@ abstract class PipedMessage
            * must be ignored because the transfer encoding will change the way entity bodies are represented and
            * transferred (and number of bytes transmitted).
            */
-          if (header.name.equalsIgnoreCase("Transfer-Encoding") )
+          if (header.name.equalsIgnoreCase("Transfer-Encoding"))
           {
             if (header.value.equalsIgnoreCase("chunked"))
             {
@@ -162,7 +167,7 @@ abstract class PipedMessage
         {
           readState = ReadState.READING_CHUNKED_CONTENT;
         }
-        else if (contentLength != null)
+        else if (contentLength != null && contentLength > 0)
         {
           contentRead = 0;
           readState = ReadState.READING_FIXED_LENGTH_CONTENT;

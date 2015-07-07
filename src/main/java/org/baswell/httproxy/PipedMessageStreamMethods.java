@@ -20,13 +20,13 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 
-class HttpMessageStreamMethods
+class PipedMessageStreamMethods
 {
   static void doReadAndWriteMessage(PipedMessage messagePipe, InputStream inputStream, byte[] readBytes, int sleepSecondsOnReadWait) throws ProxiedIOException, HttpProtocolException, EndProxiedRequestException
   {
     try
     {
-      while (true)
+      while (!messagePipe.isReadComplete()) // Stream messages write the full content (blocking) so when read is complete so is write
       {
         int read = inputStream.read(readBytes);
 
@@ -45,16 +45,10 @@ class HttpMessageStreamMethods
         }
         else
         {
-          // TODO How expensive is this ? Does the stream need to work directly on the byte array ?
           messagePipe.readBuffer = ByteBuffer.wrap(readBytes);
           messagePipe.readBuffer.limit(read);
 
           messagePipe.readAndWriteBuffer();
-        }
-
-        if (messagePipe.readState == PipedMessage.ReadState.DONE)
-        {
-          break;
         }
       }
     }
@@ -68,25 +62,19 @@ class HttpMessageStreamMethods
   {
     try
     {
-      if ((messagePipe.writeBuffer != null) && (outputStream != null))
+      if (messagePipe.writeBuffer != null && !messagePipe.writeBuffer.isEmpty()  && outputStream != null)
       {
-        if (!messagePipe.writeBuffer.isEmpty())
-        {
-          outputStream.write(messagePipe.writeBuffer.toArray());
-        }
-        messagePipe.writeBuffer = null;
+        outputStream.write(messagePipe.writeBuffer.toArray());
+        messagePipe.writeBuffer.clear();
       }
 
       messagePipe.readBuffer.reset();
       if (outputStream != null)
       {
-        if (readBytes != null)
-        {
-          outputStream.write(messagePipe.readBuffer.array(), messagePipe.readBuffer.position(), messagePipe.readBuffer.limit() - messagePipe.readBuffer.position());
-          outputStream.flush();
-        }
+        outputStream.write(messagePipe.readBuffer.array(), messagePipe.readBuffer.position(), messagePipe.readBuffer.limit() - messagePipe.readBuffer.position());
+        outputStream.flush();
       }
-      else if (readBytes != null)
+      else
       {
         messagePipe.writeBuffer.add(messagePipe.readBuffer.array(), messagePipe.readBuffer.position(), messagePipe.readBuffer.position());
       }
