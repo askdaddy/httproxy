@@ -31,6 +31,17 @@ import java.util.concurrent.ExecutorService;
  */
 public class SSLSocketChannel extends SocketChannel implements WrappedSocketChannel
 {
+  public static void main(String[] args) throws Exception
+  {
+    ByteBuffer buffer = ByteBuffer.allocate(10);
+
+    for (int i = 0; i < 20; i++)
+    {
+      System.out.println(buffer.position() + " " + buffer.limit() + " " + buffer.remaining() + " " + buffer.hasRemaining());
+      buffer.put((byte)i);
+    }
+  }
+
   private final SocketChannel socketChannel;
 
   private final SSLEngine sslEngine;
@@ -68,8 +79,8 @@ public class SSLSocketChannel extends SocketChannel implements WrappedSocketChan
     logDebug = log != null && log.logDebugs();
 
     SSLSession session = sslEngine.getSession();
-    int applicationBufferSize = session.getApplicationBufferSize() * 10;
-    int networkBufferSize = session.getPacketBufferSize() * 10;
+    int applicationBufferSize = session.getApplicationBufferSize();
+    int networkBufferSize = session.getPacketBufferSize();
 
     networkInboundBuffer = ByteBuffer.allocate(networkBufferSize);
 
@@ -93,7 +104,7 @@ public class SSLSocketChannel extends SocketChannel implements WrappedSocketChan
   {
     int intialPosition = applicationBuffer.position();
 
-    if (applicationInboundBuffer.hasRemaining() && applicationBuffer.position() < applicationBuffer.limit())
+    if (applicationInboundBuffer.hasRemaining() && applicationBuffer.hasRemaining())
     {
       applicationBuffer.put(applicationInboundBuffer);
     }
@@ -135,6 +146,11 @@ public class SSLSocketChannel extends SocketChannel implements WrappedSocketChan
   @Override
   synchronized public int write(ByteBuffer applicationBuffer) throws IOException
   {
+    if (applicationBuffer == null || !applicationBuffer.hasRemaining() || !applicationOutboundBuffer.hasRemaining())
+    {
+      return 0;
+    }
+
     // 1. Fill applicationOutboundBuffer
 
     int initialAppBufferPosition = applicationBuffer.position();
@@ -300,6 +316,11 @@ public class SSLSocketChannel extends SocketChannel implements WrappedSocketChan
       }
     }
 
+    if (networkOutboundBuffer.hasRemaining())
+    {
+      return totalWritten;
+    }
+
     // 2. Any data in application buffer ? Wrap that and send it to peer.
 
     applicationOutboundBuffer.flip();
@@ -403,6 +424,8 @@ public class SSLSocketChannel extends SocketChannel implements WrappedSocketChan
 
             case BUFFER_OVERFLOW:
               throw new IOException("Buffer overflow.");
+              //System.out.println(applicationOutboundBuffer.limit() + " " + applicationOutboundBuffer.remaining() + " / " + networkOutboundBuffer.limit() + " " + networkOutboundBuffer.remaining());
+              //break WRAP;
 
             case CLOSED:
               if (logDebug) log.debug("wrap: exit: closed");
