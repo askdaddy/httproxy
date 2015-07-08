@@ -15,6 +15,7 @@ import java.net.InetSocketAddress;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.security.KeyStore;
+import java.security.SecureRandom;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -55,7 +56,25 @@ public class NIOServer
 
     SSLEngine sslEngine = sslContext.createSSLEngine("localhost", 44301);
 
-    ServerSocketChannelAcceptLoop acceptLoop = new ServerSocketChannelAcceptLoop(new SimpleNIOProxyDirector("localhost", 8080)
+    SSLContext sslContextServer = SSLContext.getInstance("TLS");
+    TrustManager[] trustManagers = new TrustManager[]{new X509TrustManager()
+    {
+      public X509Certificate[] getAcceptedIssuers()
+      {
+        return null;
+      }
+
+      public void checkClientTrusted(X509Certificate[] certs, String authType)
+      {}
+
+      public void checkServerTrusted(X509Certificate[] certs, String authType)
+      {}
+    }};
+    sslContextServer.init(null, trustManagers, new SecureRandom());
+
+
+
+    ServerSocketChannelAcceptLoop acceptLoop = new ServerSocketChannelAcceptLoop(new SimpleNIOProxyDirector("ndmswsdv01.ndc.nasa.gov", 44301, sslContextServer)
     {
       /*
       public SocketChannel connectToProxiedHost(ProxiedRequest request) throws IOException
@@ -88,7 +107,7 @@ public class NIOServer
     ServerSocketChannel serverSocketChannel = ServerSocketChannel.open();
     serverSocketChannel.socket().bind(new InetSocketAddress(9090));
 
-//    SSLServerSocketChannel sslServerSocketChannel = new SSLServerSocketChannel(serverSocketChannel, serverContext, sslThreadPool, logger);
-    acceptLoop.start(serverSocketChannel);
+    SSLServerSocketChannel sslServerSocketChannel = new SSLServerSocketChannel(serverSocketChannel, serverContext, sslThreadPool, logger);
+    acceptLoop.start(sslServerSocketChannel);
   }
 }

@@ -15,7 +15,11 @@
  */
 package org.baswell.httproxy;
 
+import javax.net.ssl.SSLContext;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * A simple NIOProxyDirector that proxies to a single server and prints out proxy events.
@@ -32,6 +36,11 @@ public class SimpleNIOProxyDirector extends SimpleProxyDirector implements NIOPr
     super(proxiedHost, proxiedPort);
   }
 
+  public SimpleNIOProxyDirector(String proxiedHost, int proxiedPort, SSLContext sslContext)
+  {
+    super(proxiedHost, proxiedPort, sslContext);
+  }
+
   @Override
   public int getMaxWriteAttempts()
   {
@@ -41,6 +50,6 @@ public class SimpleNIOProxyDirector extends SimpleProxyDirector implements NIOPr
   @Override
   public ExecutorService getSSLThreadPool()
   {
-    return null;
+    return new ThreadPoolExecutor(10, 50, 10, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
   }
 }

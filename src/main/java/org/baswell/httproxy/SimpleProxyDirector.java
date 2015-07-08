@@ -15,6 +15,7 @@
  */
 package org.baswell.httproxy;
 
+import javax.net.ssl.SSLContext;
 import java.io.IOException;
 import java.util.List;
 
@@ -32,14 +33,22 @@ abstract public class SimpleProxyDirector implements ProxyDirector
 
   protected final int proxiedPort;
 
+  protected final SSLContext sslContext;
+
   protected final ConnectionParameters connectionParameters;
 
   protected SimpleProxyDirector(String proxiedHost, int proxiedPort)
   {
+    this(proxiedHost, proxiedPort, null);
+  }
+
+  protected SimpleProxyDirector(String proxiedHost, int proxiedPort, SSLContext sslContext)
+  {
     this.proxiedHost = proxiedHost;
     this.proxiedPort = proxiedPort;
+    this.sslContext = sslContext;
 
-    connectionParameters = new ConnectionParameters(proxiedHost, proxiedPort);
+    connectionParameters = new ConnectionParameters(proxiedHost, proxiedPort, sslContext);
   }
 
   @Override
@@ -85,12 +94,14 @@ abstract public class SimpleProxyDirector implements ProxyDirector
   public void onPrematureRequestClosed(HttpRequest httpRequest, IOException e)
   {
     System.err.println("Request premature closed: " + e.getMessage());
+    e.printStackTrace();
   }
 
   @Override
   public void onPrematureResponseClosed(HttpRequest httpRequest, HttpResponse response, ConnectionParameters connectionParameters, IOException e)
   {
     System.err.println("Response premature closed: " + e.getMessage());
+    e.printStackTrace();
   }
 
   @Override

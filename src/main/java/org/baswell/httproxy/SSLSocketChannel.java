@@ -54,11 +54,13 @@ public class SSLSocketChannel extends SocketChannel implements WrappedSocketChan
 
   private final ByteBuffer networkInboundBuffer;
 
-  private final ByteBuffer applicationInboundBuffer;
-
   private final ByteBuffer networkOutboundBuffer;
 
-  private final ByteBuffer applicationOutboundBuffer;
+  private final ByteBuffer applicationStagingInboundBuffer;
+
+  private final ByteBuffer applicationStagingOutboundBuffer;
+
+  private final int minimumApplicationBufferSize;
 
   /**
    *
@@ -68,7 +70,7 @@ public class SSLSocketChannel extends SocketChannel implements WrappedSocketChan
    * @param log The logger for debug and error messages. A null logger will result in no log operations.
    * @throws IOException
    */
-  public SSLSocketChannel(SocketChannel socketChannel, SSLEngine sslEngine, ExecutorService executorService, ProxyLogger log)
+  public SSLSocketChannel(SocketChannel socketChannel, final SSLEngine sslEngine, ExecutorService executorService, ProxyLogger log)
   {
     super(socketChannel.provider());
     this.socketChannel = socketChannel;
@@ -76,21 +78,21 @@ public class SSLSocketChannel extends SocketChannel implements WrappedSocketChan
     this.executorService = executorService;
     this.log = log;
 
-    logDebug = log != null && log.logDebugs();
+    logDebug = true;// log != null && log.logDebugs();
 
     SSLSession session = sslEngine.getSession();
-    int applicationBufferSize = session.getApplicationBufferSize();
+    minimumApplicationBufferSize = session.getApplicationBufferSize();
     int networkBufferSize = session.getPacketBufferSize();
 
     networkInboundBuffer = ByteBuffer.allocate(networkBufferSize);
 
-    applicationInboundBuffer = ByteBuffer.allocate(applicationBufferSize);
-    applicationInboundBuffer.flip();
-
     networkOutboundBuffer = ByteBuffer.allocate(networkBufferSize);
     networkOutboundBuffer.flip();
 
-    applicationOutboundBuffer = ByteBuffer.allocate(applicationBufferSize);
+    applicationStagingInboundBuffer = ByteBuffer.allocate(minimumApplicationBufferSize);
+
+    applicationStagingOutboundBuffer = ByteBuffer.allocate(minimumApplicationBufferSize);
+    applicationStagingOutboundBuffer.flip();
   }
 
   @Override
@@ -102,82 +104,43 @@ public class SSLSocketChannel extends SocketChannel implements WrappedSocketChan
   @Override
   synchronized public int read(ByteBuffer applicationBuffer) throws IOException
   {
+    System.out.println("on read: " + applicationBuffer.position() + " " + applicationBuffer.limit());
     int intialPosition = applicationBuffer.position();
+    int readFromChannel = unwrap(true, applicationBuffer);
+    System.out.println("on read: read from channel: " + readFromChannel);
 
-    if (applicationInboundBuffer.hasRemaining() && applicationBuffer.hasRemaining())
+    if (readFromChannel < 0)
     {
-      applicationBuffer.put(applicationInboundBuffer);
+      System.out.println("on read: read channel closed");
+      return readFromChannel;
     }
-
-    int readFromChannel = unwrap(true);
-
-    int amountInAppBuffer = applicationBuffer.remaining();
-    int amountInInboundBuffer = applicationInboundBuffer.remaining();
-    if (amountInAppBuffer > 0 && amountInInboundBuffer > 0)
+    else
     {
-      if (amountInAppBuffer >= amountInInboundBuffer)
-      {
-        applicationBuffer.put(applicationInboundBuffer);
-      }
-      else
-      {
-        while (applicationBuffer.hasRemaining())
-        {
-          applicationBuffer.put(applicationInboundBuffer.get());
-        }
-      }
+      int totalRead = applicationBuffer.position() - intialPosition;
+      if (logDebug) log.info("on read: total read: " + totalRead);
+      return totalRead;
     }
-
-    int totalRead = applicationBuffer.position() - intialPosition;
-    if (totalRead == 0 && readFromChannel < 0)
-    {
-      totalRead = readFromChannel;
-    }
-    else if (applicationOutboundBuffer.hasRemaining())
-    {
-      wrap(true);
-    }
-
-
-    if (logDebug) log.debug("read: total read: " + totalRead);
-    return totalRead;
   }
 
   @Override
   synchronized public int write(ByteBuffer applicationBuffer) throws IOException
   {
-    if (applicationBuffer == null || !applicationBuffer.hasRemaining() || !applicationOutboundBuffer.hasRemaining())
+    System.out.println("on write");
+    int intialPosition = applicationBuffer.position();
+    int writtenToChannel = wrap(true, applicationBuffer);
+
+    if (writtenToChannel < 0)
     {
-      return 0;
+      System.out.println("Write channel closed");
+      return writtenToChannel;
     }
-
-    // 1. Fill applicationOutboundBuffer
-
-    int initialAppBufferPosition = applicationBuffer.position();
-    int intialAppOutboundBufferPosition = applicationOutboundBuffer.position();
-    int initialNeworkOutboundBufferPosition = networkOutboundBuffer.position();
-
-    applicationOutboundBuffer.put(applicationBuffer);
-    int writtenToBuffer = applicationBuffer.position() - initialAppBufferPosition;
-
-    // 2. Wrap data and attempt to send to network peer
-
-    int writtenToChannel = wrap(true);
-    if (writtenToChannel <= 0)
+    else
     {
-      /*
-       * If no data was written to outbound channel, it's possible the network buffer is full. The caller of this method
-       * needs to know that no data was actually written in case they want to register for a write ready event.
-       */
-      applicationBuffer.position(initialAppBufferPosition);
-      applicationOutboundBuffer.position(intialAppOutboundBufferPosition);
-      networkOutboundBuffer.position(initialNeworkOutboundBufferPosition);
-
-      writtenToBuffer = writtenToChannel;
+      int totalWritten = applicationBuffer.position() - intialPosition;
+      System.out.println("on write: total written: " + totalWritten + " amound available in network outbound: " + applicationBuffer.remaining());
+      //if (logDebug) log.info("write: total written: " + totalWritten);
+      return totalWritten;
     }
-
-    if (logDebug) log.debug("write: total written: " + writtenToBuffer);
-    return writtenToBuffer;
   }
 
   /*
@@ -187,13 +150,12 @@ public class SSLSocketChannel extends SocketChannel implements WrappedSocketChan
    * applicationInboundBuffer pre: read, post: read
    *
    */
-  synchronized int unwrap(boolean wrapIfNeeded) throws IOException
+  synchronized int unwrap(boolean wrapIfNecessary, ByteBuffer applicationInboundBuffer) throws IOException
   {
-    if (logDebug) log.debug("unwrap:");
+    if (logDebug) log.info("unwrap:");
 
     int totalReadFromSocket = 0;
 
-    applicationInboundBuffer.compact();
     try
     {
       // Keep looping until peer has no more data ready or the applicationInboundBuffer is full
@@ -205,13 +167,13 @@ public class SSLSocketChannel extends SocketChannel implements WrappedSocketChan
         while (networkInboundBuffer.hasRemaining())
         {
           int read = socketChannel.read(networkInboundBuffer);
-          if (logDebug) log.debug("unwrap: socket read " + read + "(" + readFromSocket + ", " + totalReadFromSocket + ")");
+          if (logDebug) log.info("unwrap: socket read " + read + "(" + readFromSocket + ", " + totalReadFromSocket + ")");
           if (read <= 0)
           {
             if ((read < 0) && (readFromSocket == 0) && (totalReadFromSocket == 0))
             {
               // No work done and we've reached the end of the channel from peer
-              if (logDebug) log.debug("unwrap: exit: end of channel");
+              if (logDebug) log.info("unwrap: exit: end of channel");
               return read;
             }
             break;
@@ -225,16 +187,18 @@ public class SSLSocketChannel extends SocketChannel implements WrappedSocketChan
         networkInboundBuffer.flip();
         if (readFromSocket == 0 && !networkInboundBuffer.hasRemaining())
         {
-          networkInboundBuffer.compact();
-          return totalReadFromSocket;
+          //networkInboundBuffer.compact();
+          //return totalReadFromSocket;
         }
 
         totalReadFromSocket += readFromSocket;
 
         try
         {
+          System.out.println("unwrap: network inbound remaining: " + networkInboundBuffer.remaining() + " application inbound: " + applicationInboundBuffer.position() + " " + applicationInboundBuffer.limit());
           SSLEngineResult result = sslEngine.unwrap(networkInboundBuffer, applicationInboundBuffer);
-          if (logDebug) log.debug("unwrap: result: " + result);
+          System.out.println("unwrap: network inbound remaining: " + networkInboundBuffer.remaining() + " application inbound: " + applicationInboundBuffer.position());
+          if (logDebug) log.info("unwrap: result: " + result);
 
           switch (result.getStatus())
           {
@@ -246,17 +210,17 @@ public class SSLSocketChannel extends SocketChannel implements WrappedSocketChan
                   break;
 
                 case NEED_WRAP:
-                  if (wrap(true) == 0)
+                  if (wrap(true, applicationStagingOutboundBuffer) == 0)
                   {
-                    if (logDebug) log.debug("unwrap: exit: wrap needed with no data written");
+                    if (logDebug) log.info("unwrap: exit: wrap needed with no data written");
                     return totalReadFromSocket;
                   }
                   break;
 
                 case NEED_TASK:
                   runHandshakeTasks();
-                  if (logDebug) log.debug("unwrap: exit: need tasks");
-                  break;
+                  if (logDebug) log.info("unwrap: exit: need tasks");
+                  return totalReadFromSocket;
 
                 case NOT_HANDSHAKING:
                 default:
@@ -269,7 +233,7 @@ public class SSLSocketChannel extends SocketChannel implements WrappedSocketChan
               return totalReadFromSocket;
 
             case CLOSED:
-              if (logDebug) log.debug("unwrap: exit: ssl closed");
+              if (logDebug) log.info("unwrap: exit: ssl closed");
               return totalReadFromSocket == 0 ? -1 : totalReadFromSocket;
 
             case BUFFER_UNDERFLOW:
@@ -285,7 +249,8 @@ public class SSLSocketChannel extends SocketChannel implements WrappedSocketChan
     }
     finally
     {
-      applicationInboundBuffer.flip();
+      System.out.println("unwrap: application staging: " + applicationInboundBuffer.position());
+//      applicationInboundBuffer.flip();
     }
   }
 
@@ -296,19 +261,19 @@ public class SSLSocketChannel extends SocketChannel implements WrappedSocketChan
    * applicationOutboundBuffer pre: write, post: write
    *
    */
-  synchronized int wrap(boolean unwrapIfNecessary) throws IOException
+  synchronized int wrap(boolean unwrapIfNecessary, ByteBuffer applicationOutboundBuffer) throws IOException
   {
-    if (logDebug) log.debug("wrap");
+    if (logDebug) log.info("wrap");
     int totalWritten = 0;
 
-    sslEngine.wrap(applicationOutboundBuffer, networkOutboundBuffer);
+   // sslEngine.wrap(applicationOutboundBuffer, networkOutboundBuffer);
 
     // 1. Any data already wrapped ? Go ahead and send that.
     while (networkOutboundBuffer.hasRemaining())
     {
       int written = socketChannel.write(networkOutboundBuffer);
       totalWritten += written;
-      if (logDebug) log.debug("wrap: pre socket write: " + written + " (" + totalWritten + ")");
+      if (logDebug) log.info("wrap: pre socket write: " + written + " (" + totalWritten + ")");
 
       if (written <= 0)
       {
@@ -323,14 +288,15 @@ public class SSLSocketChannel extends SocketChannel implements WrappedSocketChan
 
     // 2. Any data in application buffer ? Wrap that and send it to peer.
 
-    applicationOutboundBuffer.flip();
     networkOutboundBuffer.compact();
     try
     {
       WRAP: while (applicationOutboundBuffer.hasRemaining() || networkOutboundBuffer.hasRemaining())
       {
+        System.out.println("wrap: application outbound: " + applicationOutboundBuffer.remaining());
         SSLEngineResult result = sslEngine.wrap(applicationOutboundBuffer, networkOutboundBuffer);
-        if (logDebug) log.debug("wrap: result: " + result);
+        System.out.println("wrap: application outbound: " + applicationOutboundBuffer.remaining());
+        if (logDebug) log.info("wrap: result: " + result);
         networkOutboundBuffer.flip();
         try
         {
@@ -339,7 +305,6 @@ public class SSLSocketChannel extends SocketChannel implements WrappedSocketChan
           while (networkOutboundBuffer.hasRemaining())
           {
             int nextWritten = socketChannel.write(networkOutboundBuffer);
-            if (logDebug) log.debug("wrap: post socket write: " + nextWritten + " (" + written + ")");
 
             if (nextWritten == 0)
             {
@@ -353,7 +318,7 @@ public class SSLSocketChannel extends SocketChannel implements WrappedSocketChan
             written += nextWritten;
           }
 
-          if (logDebug) log.debug("wrap: post socket write: " + written + " (" + totalWritten + ")");
+          if (logDebug) log.info("wrap: socket write: " + written + " (" + totalWritten + ")");
 
           totalWritten += written;
 
@@ -367,13 +332,14 @@ public class SSLSocketChannel extends SocketChannel implements WrappedSocketChan
                   // Not enough data in applicationOutboundBuffer.
                   if (written == 0)
                   {
-                    if (logDebug) log.debug("wrap: exit: need wrap & no data written");
+                    if (logDebug) log.info("wrap: exit: need wrap & no data written");
                     break WRAP;
                   }
                   break;
 
                 case NEED_UNWRAP:
-                  if (unwrap(false) == 0)
+                  applicationStagingInboundBuffer.clear();
+                  if (unwrap(false, applicationStagingInboundBuffer) == 0)
                   {
                     break WRAP;
                   }
@@ -382,7 +348,7 @@ public class SSLSocketChannel extends SocketChannel implements WrappedSocketChan
                   if (unwrap(false) == 0)
                   {
                     // Don't hold selector thread up waiting on data from peer
-                    if (logDebug) log.debug("wrap: exit: unwrap and no data read");
+                    if (logDebug) log.info("wrap: exit: unwrap and no data read");
                     break WRAP;
                   }
                   */
@@ -393,7 +359,7 @@ public class SSLSocketChannel extends SocketChannel implements WrappedSocketChan
                     if (unwrap(false) == 0)
                     {
                       // Don't hold selector thread up waiting on data from peer
-                      if (logDebug) log.debug("wrap: exit: unwrap and no data read");
+                      if (logDebug) log.info("wrap: exit: unwrap and no data read");
                       break UNWRAP;
                     }
                     else
@@ -403,20 +369,20 @@ public class SSLSocketChannel extends SocketChannel implements WrappedSocketChan
                   }
                   else
                   {
-                    if (logDebug) log.debug("wrap: exit: unwrap and unwrap not allowed");
+                    if (logDebug) log.info("wrap: exit: unwrap and unwrap not allowed");
                     break UNWRAP;
                   }
                   */
 
                 case NEED_TASK:
                   runHandshakeTasks();
-                  if (logDebug) log.debug("wrap: exit: need tasks");
+                  if (logDebug) log.info("wrap: exit: need tasks");
                   break;
 
                 case NOT_HANDSHAKING:
                   if (written <= 0)
                   {
-                    if (logDebug) log.debug("wrap: exit: no data written");
+                    if (logDebug) log.info("wrap: exit: no data written");
                     break WRAP;
                   }
               }
@@ -428,12 +394,12 @@ public class SSLSocketChannel extends SocketChannel implements WrappedSocketChan
               //break WRAP;
 
             case CLOSED:
-              if (logDebug) log.debug("wrap: exit: closed");
+              if (logDebug) log.info("wrap: exit: closed");
               break WRAP;
 
             case BUFFER_UNDERFLOW:
               // Need more data in applicationOutboundBuffer
-              if (logDebug) log.debug("wrap: exit: buffer underflow");
+              if (logDebug) log.info("wrap: exit: buffer underflow");
               break WRAP;
           }
         }
@@ -445,11 +411,10 @@ public class SSLSocketChannel extends SocketChannel implements WrappedSocketChan
     }
     finally
     {
-      applicationOutboundBuffer.compact();
       networkOutboundBuffer.flip();
     }
 
-    if (logDebug) log.debug("wrap: return: " + totalWritten);
+    if (logDebug) log.info("wrap: return: " + totalWritten);
 
     return totalWritten;
   }
@@ -574,10 +539,17 @@ public class SSLSocketChannel extends SocketChannel implements WrappedSocketChan
 
   void runHandshakeTasks ()
   {
-    Runnable runnable;
-    while ((runnable = sslEngine.getDelegatedTask()) != null)
+    while (true)
     {
-      executorService.execute(runnable);
+      final Runnable runnable = sslEngine.getDelegatedTask();
+      if (runnable == null)
+      {
+        break;
+      }
+      else
+      {
+        executorService.execute(runnable);
+      }
     }
   }
 }

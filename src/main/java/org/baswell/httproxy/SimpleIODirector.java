@@ -15,6 +15,8 @@
  */
 package org.baswell.httproxy;
 
+import javax.net.ssl.SSLContext;
+
 /**
  * A simple IOProxyDirector that proxies to a single server and prints out proxy events.
  */
@@ -28,6 +30,11 @@ public class SimpleIODirector extends SimpleProxyDirector implements IOProxyDire
   public SimpleIODirector(String proxiedHost, int proxiedPort)
   {
     super(proxiedHost, proxiedPort);
+  }
+
+  public SimpleIODirector(String proxiedHost, int proxiedPort, SSLContext sslContext)
+  {
+    super(proxiedHost, proxiedPort, sslContext);
   }
 
   @Override

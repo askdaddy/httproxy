@@ -41,10 +41,28 @@ public class IOServer
     }}, new SecureRandom());
     */
 
+    SSLContext sslContext = SSLContext.getInstance("TLS");
+
+    TrustManager[] trustManagers = new TrustManager[]{new X509TrustManager()
+    {
+      public X509Certificate[] getAcceptedIssuers()
+      {
+        return null;
+      }
+
+      public void checkClientTrusted(X509Certificate[] certs, String authType)
+      {}
+
+      public void checkServerTrusted(X509Certificate[] certs, String authType)
+      {}
+    }};
+    sslContext.init(null, trustManagers, new SecureRandom());
+
+
 
     ThreadPoolExecutor threadPool = new ThreadPoolExecutor(250, 2000, 25, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
     ServerSocket serverSocket = new ServerSocket(9090);
-    ServerSocketAcceptLoop acceptLoop = new ServerSocketAcceptLoop(new SimpleIODirector("localhost", 8080)
+    ServerSocketAcceptLoop acceptLoop = new ServerSocketAcceptLoop(new SimpleIODirector("ndmswsdv01.ndc.nasa.gov", 44301, sslContext)
     {
       /*
       public Socket connectToProxiedHost(ProxiedRequest request) throws IOException
