@@ -116,6 +116,7 @@ public class SSLSocketChannel extends SocketChannel implements WrappedSocketChan
     }
     else
     {
+      wrap(false, ByteBuffer.allocate(0));
       int totalRead = applicationBuffer.position() - intialPosition;
       if (logDebug) log.info("on read: total read: " + totalRead);
       return totalRead;
@@ -136,6 +137,7 @@ public class SSLSocketChannel extends SocketChannel implements WrappedSocketChan
     }
     else
     {
+      unwrap(false, ByteBuffer.allocate(0));
       int totalWritten = applicationBuffer.position() - intialPosition;
       System.out.println("on write: total written: " + totalWritten + " amound available in network outbound: " + applicationBuffer.remaining());
       //if (logDebug) log.info("write: total written: " + totalWritten);
