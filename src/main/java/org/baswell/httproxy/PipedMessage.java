@@ -249,6 +249,7 @@ abstract class PipedMessage
     {
       byte b = readBuffer.get();
       currentLine.add(b);
+      readBuffer.mark();
       if (b == LF)
       {
         byte[] lineBytes = currentLine.toArray();

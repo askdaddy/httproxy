@@ -69,14 +69,19 @@ class PipedMessageStreamMethods
       }
 
       messagePipe.readBuffer.reset();
-      if (outputStream != null)
+      int position = messagePipe.readBuffer.position();
+      int read = messagePipe.readBuffer.limit() - position;
+      if (read > 0)
       {
-        outputStream.write(messagePipe.readBuffer.array(), messagePipe.readBuffer.position(), messagePipe.readBuffer.limit() - messagePipe.readBuffer.position());
-        outputStream.flush();
-      }
-      else
-      {
-        messagePipe.writeBuffer.add(messagePipe.readBuffer.array(), messagePipe.readBuffer.position(), messagePipe.readBuffer.position());
+        if (outputStream != null)
+        {
+          outputStream.write(messagePipe.readBuffer.array(), position, read);
+          outputStream.flush();
+        }
+        else
+        {
+          messagePipe.writeBuffer.add(messagePipe.readBuffer.array(), position, read);
+        }
       }
       messagePipe.readBuffer.mark();
 
