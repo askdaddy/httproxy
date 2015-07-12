@@ -74,7 +74,7 @@ public class NIOServer
 
 
 
-    ServerSocketChannelAcceptLoop acceptLoop = new ServerSocketChannelAcceptLoop(new SimpleNIOProxyDirector("ndmswsdv01.ndc.nasa.gov", 44301, sslContextServer)
+    ServerSocketChannelAcceptLoop acceptLoop = new ServerSocketChannelAcceptLoop(new SimpleNIOProxyDirector("localhost", 44301, sslContextServer)
     {
       /*
       public SocketChannel connectToProxiedHost(ProxiedRequest request) throws IOException
