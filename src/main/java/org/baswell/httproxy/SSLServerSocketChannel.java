@@ -73,24 +73,19 @@ public class SSLServerSocketChannel extends ServerSocketChannel
 
   private final SSLContext sslContext;
 
-  private final ExecutorService threadPool;
-
-  private final ProxyLogger logger;
+  private final NIOProxyDirector proxyDirector;
 
   /**
    *
    * @param serverSocketChannel The real server socket channel that accepts network requests.
    * @param sslContext The SSL context used to create the {@link SSLEngine} for incoming requests.
-   * @param threadPool The thread pool passed to SSLSocketChannel used to execute long running, blocking SSL operations such as certificate validation with a CA (<a href="http://docs.oracle.com/javase/7/docs/api/javax/net/ssl/SSLEngineResult.HandshakeStatus.html#NEED_TASK">NEED_TASK</a>)
-   * @param logger The logger for debug and error messages. A null logger will result in no log operations.
    */
-  public SSLServerSocketChannel(ServerSocketChannel serverSocketChannel, SSLContext sslContext, ExecutorService threadPool, ProxyLogger logger)
+  public SSLServerSocketChannel(ServerSocketChannel serverSocketChannel, SSLContext sslContext, NIOProxyDirector proxyDirector)
   {
     super(serverSocketChannel.provider());
     this.serverSocketChannel = serverSocketChannel;
     this.sslContext = sslContext;
-    this.threadPool = threadPool;
-    this.logger = logger;
+    this.proxyDirector = proxyDirector;
   }
 
   @Override
@@ -112,7 +107,7 @@ public class SSLServerSocketChannel extends ServerSocketChannel
     sslEngine.setEnabledProtocols(filterArray(sslEngine.getEnabledProtocols(), includedProtocols, excludedProtocols));
     sslEngine.setEnabledCipherSuites(filterArray(sslEngine.getEnabledCipherSuites(), includedCipherSuites, excludedCipherSuites));
 
-    return new SSLSocketChannel(channel, sslEngine, threadPool, logger);
+    return new SSLSocketChannel(channel, sslEngine, proxyDirector.getSSLThreadPool(), proxyDirector.getLogger());
   }
 
   @Override

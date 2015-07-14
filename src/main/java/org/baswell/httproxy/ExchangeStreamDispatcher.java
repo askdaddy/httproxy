@@ -21,18 +21,16 @@ import java.util.concurrent.ExecutorService;
 
 class ExchangeStreamDispatcher
 {
-  private final ExecutorService executorService;
-
   private final IOProxyDirector proxyDirector;
 
-  ExchangeStreamDispatcher(IOProxyDirector proxyDirector, ExecutorService executorService)
+  ExchangeStreamDispatcher(IOProxyDirector proxyDirector)
   {
     this.proxyDirector = proxyDirector;
-    this.executorService = executorService;
   }
 
   void dispatch(Socket socket)
   {
+    ExecutorService executorService = proxyDirector.getIOThreadPool();
     try
     {
       final PipedExchangeStream exchangeStream = new PipedExchangeStream(socket, proxyDirector);
@@ -56,6 +54,5 @@ class ExchangeStreamDispatcher
     }
     catch (IOException e)
     {}
-
   }
 }

@@ -52,7 +52,6 @@ public class NIOServer
     sslContext.init(null, new TrustManager[]{trustAll}, null);
 
     final ThreadPoolExecutor sslThreadPool = new ThreadPoolExecutor(250, 2000, 25, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
-    final ProxyLogger logger = new SimpleProxyLogger(SimpleProxyLogger.INFO_LEVEL);
 
     SSLEngine sslEngine = sslContext.createSSLEngine("localhost", 44301);
 
@@ -74,21 +73,8 @@ public class NIOServer
 
 
 
-    ServerSocketChannelAcceptLoop acceptLoop = new ServerSocketChannelAcceptLoop(new SimpleNIOProxyDirector("localhost", 44301, sslContextServer)
-    {
-      /*
-      public SocketChannel connectToProxiedHost(ProxiedRequest request) throws IOException
-      {
-        InetSocketAddress address = new InetSocketAddress("localhost", 44301);
-        SocketChannel socketChannel = SocketChannel.open(address);
-        socketChannel.configureBlocking(false);
-        SSLEngine sslEngine = sslContext.createSSLEngine(address.getHostName(), address.getPort());
-        sslEngine.setUseClientMode(true);
-
-        return new SSLSocketChannel(socketChannel, sslEngine, sslThreadPool, logger);
-      }
-      */
-    }, 1);
+    SimpleNIOProxyDirector proxyDirector = new SimpleNIOProxyDirector("localhost", 44301, sslContextServer, sslThreadPool);
+    ServerSocketChannelAcceptLoop acceptLoop = new ServerSocketChannelAcceptLoop(proxyDirector);
 //    ServerSocketChannelAcceptLoop acceptLoop = new ServerSocketChannelAcceptLoop(new SimpleNIOProxyDirector("localhost", 48001));
 
 
@@ -107,7 +93,7 @@ public class NIOServer
     ServerSocketChannel serverSocketChannel = ServerSocketChannel.open();
     serverSocketChannel.socket().bind(new InetSocketAddress(9090));
 
-    SSLServerSocketChannel sslServerSocketChannel = new SSLServerSocketChannel(serverSocketChannel, serverContext, sslThreadPool, logger);
+    SSLServerSocketChannel sslServerSocketChannel = new SSLServerSocketChannel(serverSocketChannel, serverContext, proxyDirector);
     acceptLoop.start(sslServerSocketChannel);
   }
 }

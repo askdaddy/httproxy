@@ -29,9 +29,9 @@ public class ServerSocketAcceptLoop
 
   private ServerSocket serverSocket;
 
-  public ServerSocketAcceptLoop(IOProxyDirector proxyDirector, ExecutorService executorService)
+  public ServerSocketAcceptLoop(IOProxyDirector proxyDirector)
   {
-    this.exchangeStreamDispatcher = new ExchangeStreamDispatcher(proxyDirector, executorService);
+    this.exchangeStreamDispatcher = new ExchangeStreamDispatcher(proxyDirector);
   }
 
   /**

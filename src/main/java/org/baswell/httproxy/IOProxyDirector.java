@@ -15,6 +15,8 @@
  */
 package org.baswell.httproxy;
 
+import java.util.concurrent.ExecutorService;
+
 /**
  * A ProxyDirector for blocking IO. All implementations of this interface <strong>must be thread-safe</strong>.
  */
@@ -25,4 +27,9 @@ public interface IOProxyDirector extends ProxyDirector
    * @return The number of seconds to sleep when a Socket's inputstream is still open but no content is available.
    */
   int getSleepSecondsOnReadWait();
+
+  /**
+   * @return The thread pool used to execute blocking IO requests & responses.
+   */
+  ExecutorService getIOThreadPool();
 }

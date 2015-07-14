@@ -16,6 +16,7 @@
 package org.baswell.httproxy;
 
 import javax.net.ssl.SSLContext;
+import java.util.concurrent.ExecutorService;
 
 /**
  * A simple IOProxyDirector that proxies to a single server and prints out proxy events.
@@ -27,19 +28,29 @@ public class SimpleIODirector extends SimpleProxyDirector implements IOProxyDire
    */
   public int sleepSecondsOnReadWait = 5;
 
-  public SimpleIODirector(String proxiedHost, int proxiedPort)
+  private final ExecutorService ioThreadPool;
+
+  public SimpleIODirector(String proxiedHost, int proxiedPort, ExecutorService ioThreadPool)
   {
     super(proxiedHost, proxiedPort);
+    this.ioThreadPool = ioThreadPool;
   }
 
-  public SimpleIODirector(String proxiedHost, int proxiedPort, SSLContext sslContext)
+  public SimpleIODirector(String proxiedHost, int proxiedPort, SSLContext sslContext, ExecutorService ioThreadPool)
   {
     super(proxiedHost, proxiedPort, sslContext);
+    this.ioThreadPool = ioThreadPool;
   }
 
   @Override
   public int getSleepSecondsOnReadWait()
   {
     return sleepSecondsOnReadWait;
+  }
+
+  @Override
+  public ExecutorService getIOThreadPool()
+  {
+    return ioThreadPool;
   }
 }

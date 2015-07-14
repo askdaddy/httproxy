@@ -31,14 +31,18 @@ public class SimpleNIOProxyDirector extends SimpleProxyDirector implements NIOPr
    */
   public int maxWriteAttempts = 5;
 
+  private final ExecutorService sslThreadPool;
+
   public SimpleNIOProxyDirector(String proxiedHost, int proxiedPort)
   {
     super(proxiedHost, proxiedPort);
+    sslThreadPool = null;
   }
 
-  public SimpleNIOProxyDirector(String proxiedHost, int proxiedPort, SSLContext sslContext)
+  public SimpleNIOProxyDirector(String proxiedHost, int proxiedPort, SSLContext sslContext, ExecutorService sslThreadPool)
   {
     super(proxiedHost, proxiedPort, sslContext);
+    this.sslThreadPool = sslThreadPool;
   }
 
   @Override
@@ -50,6 +54,6 @@ public class SimpleNIOProxyDirector extends SimpleProxyDirector implements NIOPr
   @Override
   public ExecutorService getSSLThreadPool()
   {
-    return new ThreadPoolExecutor(10, 50, 10, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
+    return sslThreadPool;
   }
 }
