@@ -39,7 +39,9 @@ class SelectorLoop implements Runnable
   SelectorLoop(NIOProxyDirector proxyDirector)
   {
     this.proxyDirector = proxyDirector;
-    this.log = proxyDirector.getLogger();
+
+    ProxyLogger log = proxyDirector.getLogger();
+    this.log = log == null ? new DevNullLogger() : log;
   }
 
   void start() throws IOException
@@ -108,10 +110,7 @@ class SelectorLoop implements Runnable
       }
       catch (IOException e)
       {
-        if (log != null)
-        {
-          log.error("Selector threw IO error?", e);
-        }
+        log.error("Selector threw IO error?", e);
       }
     }
   }

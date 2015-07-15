@@ -39,6 +39,8 @@ class PipedExchangeStream
 
   private final CountDownLatch responseStartSignal = new CountDownLatch(1);
 
+  private final ProxyLogger log;
+
   PipedExchangeStream(Socket clientSocket, IOProxyDirector proxyDirector) throws IOException
   {
     clientSocket.setKeepAlive(true); // Use keep alives so we know when the far end has shutdown the socket.
@@ -46,6 +48,8 @@ class PipedExchangeStream
     this.clientSocket = clientSocket;
     this.proxyDirector = proxyDirector;
 
+    ProxyLogger log = proxyDirector.getLogger();
+    this.log = log == null ? new DevNullLogger() : log;
 
     requestPipeStream = new PipedRequestStream(proxyDirector, this, clientSocket);
     responsePipeStream = new PipedResponseStream(proxyDirector, this, clientSocket.getOutputStream());
@@ -73,7 +77,8 @@ class PipedExchangeStream
           }
         }
         catch (InterruptedException e)
-        {}
+        {
+        }
         catch (IOException e)
         {
           throw new ProxiedIOException(requestPipeStream.currentRequest, e);
@@ -110,7 +115,13 @@ class PipedExchangeStream
         clientSocket.getOutputStream().write(e.toString().getBytes());
       }
       catch (IOException ie)
-      {}
+      {
+      }
+      close();
+    }
+    catch (Exception e)
+    {
+      log.error("Unexpected exception thrown in request loop.", e);
       close();
     }
   }
@@ -186,6 +197,11 @@ class PipedExchangeStream
         {}
         close();
       }
+      catch (Exception e)
+      {
+        log.error("Unexpected exception thrown in response loop.", e);
+        close();
+      }
     }
   }
 
@@ -240,22 +256,26 @@ class PipedExchangeStream
 
   void close()
   {
-    closed = true;
-    if (clientSocket.isConnected())
+    if (!closed)
     {
-      try
+      closed = true;
+      if (clientSocket.isConnected())
       {
-        clientSocket.close();
+        try
+        {
+          clientSocket.close();
+        }
+        catch (Exception e)
+        {
+        }
       }
-      catch (Exception e)
-      {}
-    }
 
-    synchronized (this)
-    {
-      notifyAll();
-    }
+      synchronized (this)
+      {
+        notifyAll();
+      }
 
-    socketMultiplexer.closeQuitely();
+      socketMultiplexer.closeQuitely();
+    }
   }
 }

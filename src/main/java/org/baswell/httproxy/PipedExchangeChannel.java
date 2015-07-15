@@ -54,7 +54,10 @@ class PipedExchangeChannel
     this.clientSocketChannel = clientSocketChannel;
     this.proxyDirector = proxyDirector;
 
-    log = proxyDirector.getLogger();
+
+    ProxyLogger log = proxyDirector.getLogger();
+    this.log = log == null ? new DevNullLogger() : log;
+
     clientSocketChannel.configureBlocking(false);
 
     SocketChannel realSocketChannel;
@@ -167,10 +170,7 @@ class PipedExchangeChannel
     }
     else
     {
-      if (log != null)
-      {
-        log.error("Received onReadReady() event with invalid selection key.");
-      }
+      log.error("Received onReadReady() event with invalid selection key.");
     }
   }
 
@@ -221,10 +221,7 @@ class PipedExchangeChannel
     }
     else
     {
-      if (log != null)
-      {
-        log.error("Received onWriteReady() event with invalid selection key.");
-      }
+      log.error("Received onWriteReady() event with invalid selection key.");
     }
   }
 
