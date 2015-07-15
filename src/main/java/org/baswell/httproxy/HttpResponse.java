@@ -16,6 +16,8 @@
 package org.baswell.httproxy;
 
 import java.net.HttpCookie;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 
 public class HttpResponse extends HttpMessage
 {
@@ -80,6 +82,12 @@ public class HttpResponse extends HttpMessage
 
   public void setCookie(HttpCookie cookie)
   {
-    headers.add(new HttpHeader("Set-Cookie", cookie.toString()));
+    headers.add(new HttpHeader("Set-Cookie", cookie.toString().replace('$', ' ') + ";"));
+  }
+
+  static String encode(HttpCookie cookie)
+  {
+
+
   }
 }
