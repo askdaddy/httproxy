@@ -52,7 +52,12 @@ abstract class PipedMessage
 
   long contentRead;
 
-  ChunkedTerminatorState chunkedTerminatorState;
+  int chunkedNextBytesTotal;
+
+  int chunkedNextBytesRead;
+
+  ProcessChunkedState processChunkedState;
+
 
   PipedMessage(ProxyDirector proxyDirector)
   {
@@ -90,7 +95,7 @@ abstract class PipedMessage
           break;
 
         case READING_CHUNKED_CONTENT:
-          readChunkedContent();
+          processChunkedData();
           break;
 
         case DONE:
@@ -120,7 +125,7 @@ abstract class PipedMessage
   void readHeaderLine() throws HttpProtocolException, IOException, EndProxiedRequestException
   {
     byte[] headerLineBytes;
-    while ((headerLineBytes = readNextLine()) != null)
+    while ((headerLineBytes = readNextLine(true)) != null)
     {
       readBuffer.mark();
       if (lineHasContent(headerLineBytes))
@@ -139,14 +144,14 @@ abstract class PipedMessage
           {
             if (header.value.equalsIgnoreCase("chunked"))
             {
-              chunkedTerminatorState = ChunkedTerminatorState.START;
+              processChunkedState = ProcessChunkedState.READ_BYTE_COUNT;
             }
             else
             {
               throw new HttpProtocolException(currentMessage, "Don't know how to transfer encoding: " + header.value);
             }
           }
-          else if ((chunkedTerminatorState == null) && header.name.equalsIgnoreCase("Content-Length") && !header.value.isEmpty())
+          else if ((processChunkedState == null) && header.name.equalsIgnoreCase("Content-Length") && !header.value.isEmpty())
           {
             try
             {
@@ -163,7 +168,7 @@ abstract class PipedMessage
       {
         onHeadersProcessed();
 
-        if ((chunkedTerminatorState != null))
+        if ((processChunkedState != null))
         {
           readState = ReadState.READING_CHUNKED_CONTENT;
         }
@@ -191,44 +196,83 @@ abstract class PipedMessage
     }
   }
 
-  void readChunkedContent()
+  void processChunkedData() throws HttpProtocolException
   {
-    // TODO No reason to read one byte at a time here. Implement chunked-encoding logic to improve performance.
+    byte[] bytes;
+    String line;
     while (readBuffer.hasRemaining())
     {
-      byte b = readBuffer.get();
-      switch (chunkedTerminatorState)
+      switch (processChunkedState)
       {
-        case START:
-          if (b == CR)
+        case READ_BYTE_COUNT:
+          bytes = readNextLine(false);
+          if (bytes != null)
           {
-            chunkedTerminatorState = ChunkedTerminatorState.CR_1;
+            line = new String(bytes);
+            try
+            {
+              chunkedNextBytesTotal = Integer.parseInt(line.trim(), 16);
+              if (chunkedNextBytesTotal == 0)
+              {
+                processChunkedState = ProcessChunkedState.READ_LAST_LINE;
+              }
+              else if (chunkedNextBytesTotal < 0)
+              {
+                throw new HttpProtocolException(currentMessage, "Invalid chunked encoding byte count: " + chunkedNextBytesTotal);
+              }
+              else
+              {
+                chunkedNextBytesRead = 0;
+                processChunkedState = ProcessChunkedState.READ_BYTES;
+              }
+            }
+            catch (Exception e)
+            {
+              throw new HttpProtocolException(currentMessage, "Invalid chunked encoding byte count: " + line);
+            }
           }
           break;
 
-        case CR_1:
-          chunkedTerminatorState = b == LF ? ChunkedTerminatorState.LF_1 : ChunkedTerminatorState.START;
-          break;
+        case READ_BYTES:
+          int remainingBytesToRead = chunkedNextBytesTotal - chunkedNextBytesRead;
+          int readBufferPosition = readBuffer.position();
+          int remainingBytesInBuffer = readBuffer.limit() - readBufferPosition;
 
-        case LF_1:
-          chunkedTerminatorState = b == CR ? ChunkedTerminatorState.CR_2 : ChunkedTerminatorState.START;
-          break;
-
-        case CR_2:
-          if (b == LF)
+          if (remainingBytesInBuffer >= remainingBytesToRead)
           {
-            chunkedTerminatorState = ChunkedTerminatorState.LF_2;
+            readBuffer.position(readBufferPosition + remainingBytesToRead);
+            chunkedNextBytesTotal = chunkedNextBytesRead = 0;
+            processChunkedState = ProcessChunkedState.CLEAR_READ_BYTES_TERMINATOR;
+          }
+          else
+          {
+            readBuffer.position(readBufferPosition + remainingBytesInBuffer);
+            chunkedNextBytesRead += remainingBytesInBuffer;
+          }
+          break;
+
+        case CLEAR_READ_BYTES_TERMINATOR:
+          if (readNextLine(false) != null)
+          {
+            processChunkedState = ProcessChunkedState.READ_BYTE_COUNT;
+          }
+          break;
+
+        case READ_LAST_LINE:
+          if (readNextLine(false) != null)
+          {
+            processChunkedState = null;
             readState = ReadState.DONE;
             return;
           }
           else
           {
-            chunkedTerminatorState = ChunkedTerminatorState.START;
             break;
           }
       }
     }
   }
+
 
   void reset()
   {
@@ -240,16 +284,19 @@ abstract class PipedMessage
     }
     contentLength = null;
     contentRead = 0;
-    chunkedTerminatorState = null;
+    processChunkedState = null;
   }
 
-  protected byte[] readNextLine()
+  protected byte[] readNextLine(boolean markReadBuffer)
   {
     while (readBuffer.hasRemaining())
     {
       byte b = readBuffer.get();
       currentLine.add(b);
-      readBuffer.mark();
+      if (markReadBuffer)
+      {
+        readBuffer.mark();
+      }
       if (b == LF)
       {
         byte[] lineBytes = currentLine.toArray();
@@ -283,12 +330,11 @@ abstract class PipedMessage
     DONE;
   }
 
-  enum ChunkedTerminatorState
+  enum ProcessChunkedState
   {
-    START,
-    CR_1,
-    LF_1,
-    CR_2,
-    LF_2;
+    READ_BYTE_COUNT,
+    READ_BYTES,
+    CLEAR_READ_BYTES_TERMINATOR,
+    READ_LAST_LINE;
   }
 }

@@ -39,7 +39,7 @@ abstract public class PipedRequest extends PipedMessage
   @Override
   void readStatusLine() throws IOException
   {
-    byte[] statusLine = readNextLine();
+    byte[] statusLine = readNextLine(true);
     if (statusLine != null)
     {
       readBuffer.mark();

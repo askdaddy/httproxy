@@ -62,7 +62,7 @@ public class IOServer
 
     ThreadPoolExecutor threadPool = new ThreadPoolExecutor(250, 2000, 25, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
     ServerSocket serverSocket = new ServerSocket(9090);
-    ServerSocketAcceptLoop acceptLoop = new ServerSocketAcceptLoop(new SimpleIODirector("ndmswsdv01.ndc.nasa.gov", 48001, threadPool));
+    ServerSocketAcceptLoop acceptLoop = new ServerSocketAcceptLoop(new SimpleIODirector("localhost", 48001, threadPool));
     acceptLoop.start(serverSocket);
   }
 }
