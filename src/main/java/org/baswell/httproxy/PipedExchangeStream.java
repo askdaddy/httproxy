@@ -199,15 +199,23 @@ class PipedExchangeStream
     else
     {
       connectingServerSocket = true;
-      Socket serverSocket = socketMultiplexer.getConnectionFor(currentConnectionParameters);
-      serverSocket.setKeepAlive(true); // Use keep alives so we know when the far end has shutdown the socket.
+      try
+      {
+        Socket serverSocket = socketMultiplexer.getConnectionFor(currentConnectionParameters);
+        serverSocket.setKeepAlive(true); // Use keep alives so we know when the far end has shutdown the socket.
 
-      requestPipeStream.currentOutputStream = serverSocket.getOutputStream();
+        requestPipeStream.currentOutputStream = serverSocket.getOutputStream();
 
-      responsePipeStream.currentInputStream = serverSocket.getInputStream();
-      responsePipeStream.overSSL = currentConnectionParameters.ssl;
+        responsePipeStream.currentInputStream = serverSocket.getInputStream();
+        responsePipeStream.overSSL = currentConnectionParameters.ssl;
 
-      connectingServerSocket = false;
+        connectingServerSocket = false;
+      }
+      catch (IOException e)
+      {
+        proxyDirector.onConnectionFailed(requestPipeStream.currentRequest, currentConnectionParameters, e);
+        throw e;
+      }
     }
   }
 

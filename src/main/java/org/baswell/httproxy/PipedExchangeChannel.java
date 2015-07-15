@@ -238,23 +238,31 @@ class PipedExchangeChannel
       throw EndProxiedRequestException.NOT_FOUND;
     }
 
-    SocketChannel serverSocketChannel = socketChannelMultiplexer.getConnectionFor(currentConnectionParameters);
-
-    if (responseSelectionKeys.containsKey(currentConnectionParameters))
+    try
     {
-      currentResponseSelectionKey = responseSelectionKeys.get(currentConnectionParameters);
-    }
-    else
-    {
-      SocketChannel realSocketChannel = (serverSocketChannel instanceof WrappedSocketChannel) ? ((WrappedSocketChannel)serverSocketChannel).getWrappedSocketChannel() : serverSocketChannel;
-      currentResponseSelectionKey = realSocketChannel.register(selectorLoop.selector, SelectionKey.OP_READ);
-      currentResponseSelectionKey.attach(this);
-      responseSelectionKeys.put(currentConnectionParameters, currentResponseSelectionKey);
-    }
+      SocketChannel serverSocketChannel = socketChannelMultiplexer.getConnectionFor(currentConnectionParameters);
 
-    requestPipeChannel.currentWriteChannel = responsePipeChannel.currentReadChannel = serverSocketChannel;
-    responsePipeChannel.overSSL = currentConnectionParameters.ssl;
-    connectingServerChannel = false;
+      if (responseSelectionKeys.containsKey(currentConnectionParameters))
+      {
+        currentResponseSelectionKey = responseSelectionKeys.get(currentConnectionParameters);
+      }
+      else
+      {
+        SocketChannel realSocketChannel = (serverSocketChannel instanceof WrappedSocketChannel) ? ((WrappedSocketChannel) serverSocketChannel).getWrappedSocketChannel() : serverSocketChannel;
+        currentResponseSelectionKey = realSocketChannel.register(selectorLoop.selector, SelectionKey.OP_READ);
+        currentResponseSelectionKey.attach(this);
+        responseSelectionKeys.put(currentConnectionParameters, currentResponseSelectionKey);
+      }
+
+      requestPipeChannel.currentWriteChannel = responsePipeChannel.currentReadChannel = serverSocketChannel;
+      responsePipeChannel.overSSL = currentConnectionParameters.ssl;
+      connectingServerChannel = false;
+    }
+    catch (IOException e)
+    {
+      proxyDirector.onConnectionFailed(requestPipeChannel.currentRequest, currentConnectionParameters, e);
+      throw e;
+    }
   }
 
   void onRequestDone()

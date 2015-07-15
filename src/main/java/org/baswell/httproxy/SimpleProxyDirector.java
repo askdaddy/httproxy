@@ -65,6 +65,13 @@ abstract public class SimpleProxyDirector implements ProxyDirector
   }
 
   @Override
+  public void onConnectionFailed(HttpRequest httpRequest, ConnectionParameters connectionParameters, IOException e)
+  {
+    System.err.println("Connection failed to: " + connectionParameters + " for request: "+ httpRequest.getStatusLine());
+    e.printStackTrace();
+  }
+
+  @Override
   public void onRequestEnd(HttpRequest httpRequest, ConnectionParameters connectionParameters)
   {}
 

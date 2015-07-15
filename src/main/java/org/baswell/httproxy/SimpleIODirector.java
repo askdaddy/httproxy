@@ -16,6 +16,7 @@
 package org.baswell.httproxy;
 
 import javax.net.ssl.SSLContext;
+import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 
 /**

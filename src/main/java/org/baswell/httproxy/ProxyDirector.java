@@ -41,6 +41,14 @@ public interface ProxyDirector
   ConnectionParameters onRequestStart(HttpRequest httpRequest) throws EndProxiedRequestException;
 
   /**
+   * Notification when a connection was unable to be established.
+   *
+   * @param httpRequest The HTTP request this connection failed on.
+   * @param connectionParameters The connection parameters previously return from {@link #onRequestStart(HttpRequest)}.
+   */
+  void onConnectionFailed(HttpRequest httpRequest, ConnectionParameters connectionParameters, IOException e);
+
+  /**
    * After the given HTTP request has been sent to the server (including body). Modifying the given HTTP request here will
    * have no impact as the request has already been sent.
    *

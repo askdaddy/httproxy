@@ -59,4 +59,21 @@ abstract public class PipedRequest extends PipedMessage
   {
     clientIp = ((InetSocketAddress)socket.getRemoteSocketAddress()).getHostName();
   }
+
+  @Override
+  boolean isMessageComplete()
+  {
+    if (readState == ReadState.READING_STATUS)
+    {
+      /*
+       * After a message exchange is complete, requests are always blocking on the socket for the next message. The previous
+       * exchange may be the last in the sequence so if nothing has been read this request can be considered done here.
+       */
+      return currentLine == null || currentLine.isEmpty();
+    }
+    else
+    {
+      return super.isMessageComplete();
+    }
+  }
 }
