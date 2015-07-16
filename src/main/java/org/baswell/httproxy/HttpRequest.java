@@ -15,7 +15,6 @@
  */
 package org.baswell.httproxy;
 
-import java.net.HttpCookie;
 import java.util.ArrayList;
 import java.util.List;
 

@@ -19,7 +19,10 @@ import gnu.trove.list.array.TByteArrayList;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 import static org.baswell.httproxy.Constants.*;
 
 abstract public class HttpMessage
@@ -28,11 +31,11 @@ abstract public class HttpMessage
 
   public final Date startedAt = new Date();
 
-  public List<HttpHeader> headers = new ArrayList<HttpHeader>();
+  public final List<HttpHeader> headers = new ArrayList<HttpHeader>();
 
   public Date endedAt;
 
-  public Object attachement;
+  public final Map<String, Object> attachements = new HashMap<String, Object>();
 
   HttpHeader addHeader(String headerLine)
   {

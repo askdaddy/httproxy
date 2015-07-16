@@ -1,15 +1,35 @@
 package org.baswell.httproxy;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 public class HttpCookie
 {
-  public static List<HttpCookie> parse(String setCookieValue)
+  public static List<HttpCookie> parse(String cookieHeaderValue)
   {
-
+    String[] values = cookieHeaderValue.split(";");
+    List<HttpCookie> cookies = new ArrayList<HttpCookie>();
+    for (String value : values)
+    {
+      value = value.trim();
+      if (!value.isEmpty())
+      {
+        HttpCookie cookie = new HttpCookie(value);
+        if (cookie.name != null && cookie.value != null)
+        {
+          cookies.add(cookie);
+        }
+      }
+    }
+    return cookies;
   }
+
+
+  public static final String PATTERN_RFC1123 = "EEE, dd MMM yyyy HH:mm:ss zzz";
+
+  public static final String PATTERN_RFC1036 = "EEEE, dd-MMM-yy HH:mm:ss zzz";
 
   public final String name;
 
@@ -25,7 +45,7 @@ public class HttpCookie
 
   public final boolean httpOnly;
 
-  public HttpCookie(String headerValue)
+  public HttpCookie(String setCookieValue)
   {
 
     String name = null;
@@ -36,7 +56,7 @@ public class HttpCookie
     boolean secure = false;
     boolean httpOnly = false;
 
-    String[] attributes = headerValue.split(";");
+    String[] attributes = setCookieValue.split(";");
 
     if (attributes.length > 0)
     {
@@ -73,7 +93,8 @@ public class HttpCookie
         {
           try
           {
-            expiresAt = new SimpleDateFormat("dd MMM yyyy kk:mm:ss z").parse(attValue).getTime();
+            String expiresPattern = attValue.contains("-") ? PATTERN_RFC1036 : PATTERN_RFC1123;
+            expiresAt = new SimpleDateFormat(expiresPattern).parse(attValue).getTime();
           }
           catch (Exception e)
           {}
@@ -136,7 +157,7 @@ public class HttpCookie
 
     if (expiresAt != null)
     {
-      encoded += "; Expires=" + new Date(expiresAt).toGMTString();
+      encoded += "; Expires=" + new SimpleDateFormat(PATTERN_RFC1036).format(new Date(expiresAt));
     }
 
     if (secure)
@@ -146,7 +167,7 @@ public class HttpCookie
 
     if (httpOnly)
     {
-      encoded += "; Secure";
+      encoded += "; HttpOnly";
     }
 
     return encoded;
