@@ -70,6 +70,15 @@ public class HttpResponse extends HttpMessage
     }
   }
 
+  public HttpResponse(String reasonPhrase, boolean firstInExchange, boolean overSSL, String version, int statusCode)
+  {
+    this.reasonPhrase = reasonPhrase;
+    this.firstInExchange = firstInExchange;
+    this.overSSL = overSSL;
+    this.version = version;
+    this.statusCode = statusCode;
+  }
+
   @Override
   public String getStatusLine()
   {

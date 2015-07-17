@@ -62,6 +62,16 @@ public class HttpRequest extends HttpMessage
     }
   }
 
+  public HttpRequest(String version, String path, String method, boolean overSSL, boolean firstInExchange, String clientIp)
+  {
+    this.version = version;
+    this.path = path;
+    this.method = method;
+    this.overSSL = overSSL;
+    this.firstInExchange = firstInExchange;
+    this.clientIp = clientIp;
+  }
+
   public String getHost()
   {
     return getHeaderValue("Host");

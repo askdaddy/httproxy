@@ -249,8 +249,8 @@ class PipedExchangeStream
 
   synchronized void onResponseDone() throws IOException
   {
-    proxyDirector.onResponseEnd(requestPipeStream.currentRequest, responsePipeStream.currentResponse, currentConnectionParameters);
     responsePipeStream.outputStream.flush();
+    proxyDirector.onResponseEnd(requestPipeStream.currentRequest, responsePipeStream.currentResponse, currentConnectionParameters);
     responsePipeStream.currentInputStream = null;
   }
 
