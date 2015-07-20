@@ -20,6 +20,9 @@ import static org.baswell.httproxy.Constants.*;
 
 /**
  * An HTTP header.
+ *
+ * @see HttpMessage#headers
+ * @see HttpMessage#getHeaders(String)
  */
 public class HttpHeader
 {

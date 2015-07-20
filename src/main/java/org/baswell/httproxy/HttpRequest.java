@@ -18,20 +18,48 @@ package org.baswell.httproxy;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * A proxied HTTP request. The request sent back to the client can be modified in {@link ProxyDirector#onRequestStart(HttpRequest)}.
+ */
 public class HttpRequest extends HttpMessage
 {
+  /**
+   * The client IP address this request came from.
+   */
   public final String clientIp;
 
+  /**
+   * Is this request the first in the exchange (multiple requests & responses can be processed over the same connection).
+   */
   public final boolean firstInExchange;
 
+  /**
+   * Was the request received over a SSL connection.
+   */
   public final boolean overSSL;
 
+  /**
+   * The HTTP method (ex. GET, POST, PUT)
+   */
   public String method;
 
+  /**
+   * The HTTP path requested.
+   */
   public String path;
 
+  /**
+   * The HTTP version of this request.
+   */
   public String version;
 
+  /**
+   *
+   * @param clientIp The client IP address this request came from.
+   * @param firstInExchange Is this request the first in the exchange.
+   * @param overSSL Was the request received over a SSL connection.
+   * @param requestLine The HTTP request line (ex. <i>GET /path/to/file/index.html HTTP/1.0</i>
+   */
   public HttpRequest(String clientIp, boolean firstInExchange, boolean overSSL, String requestLine)
   {
     this.clientIp = clientIp;
@@ -62,7 +90,16 @@ public class HttpRequest extends HttpMessage
     }
   }
 
-  public HttpRequest(String version, String path, String method, boolean overSSL, boolean firstInExchange, String clientIp)
+  /**
+   *
+   * @param clientIp The client IP address this request came from.
+   * @param firstInExchange Is this request the first in the exchange.
+   * @param overSSL Was the request received over a SSL connection.
+   * @param method The HTTP method (ex. GET, POST, PUT)
+   * @param path The HTTP path requested.
+   * @param version The HTTP version of the request.
+   */
+  public HttpRequest(String clientIp, boolean firstInExchange, boolean overSSL, String method, String path, String version)
   {
     this.version = version;
     this.path = path;
@@ -72,16 +109,38 @@ public class HttpRequest extends HttpMessage
     this.clientIp = clientIp;
   }
 
+  /**
+   *
+   * @return Ex. <i>GET /path/to/file/index.html HTTP/1.0</i>.
+   */
+  @Override
+  public String getStatusLine()
+  {
+    return method + " " + path + " " + version;
+  }
+
+  /**
+   *
+   * @return The value of the <i>Host</i> header or <code>null</code> if not Host header is present.
+   */
   public String getHost()
   {
     return getHeaderValue("Host");
   }
 
+  /**
+   *
+   * @return The value of the <i>User-Agent</i> header or <code>null</code> if not User-Agent header is present.
+   */
   public String getUserAgent()
   {
     return getHeaderValue("User-Agent");
   }
 
+  /**
+   *
+   * @return Parse and return all cookies contain in the headers of this request.
+   */
   public List<HttpCookie> getCookies()
   {
     List<HttpCookie> cookies = new ArrayList<HttpCookie>();
@@ -97,16 +156,12 @@ public class HttpRequest extends HttpMessage
     return cookies;
   }
 
+  /**
+   * Add a cookie to this request. Should be called from {@link ProxyDirector#onRequestStart(HttpRequest)}.
+   * @param cookie
+   */
   public void addCookie(HttpCookie cookie)
   {
     headers.add(new HttpHeader("Cookie", cookie.toString()));
   }
-
-  @Override
-  public String getStatusLine()
-  {
-    return method + " " + path + " " + version;
-  }
-
-
 }

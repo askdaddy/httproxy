@@ -54,9 +54,7 @@ class PipedExchangeChannel
     this.clientSocketChannel = clientSocketChannel;
     this.proxyDirector = proxyDirector;
 
-
-    ProxyLogger log = proxyDirector.getLogger();
-    this.log = log == null ? new DevNullLogger() : log;
+    log = new WrappedLogger(proxyDirector.getLogger());
 
     clientSocketChannel.configureBlocking(false);
 
@@ -147,14 +145,14 @@ class PipedExchangeChannel
         }
         else if (!requestPipeChannel.isMessageComplete() || !responsePipeChannel.isMessageComplete())
         {
-          proxyDirector.onPrematureResponseClosed(requestPipeChannel.currentRequest, responsePipeChannel.currentResponse, currentConnectionParameters, proxiedIOException.e);
+          proxyDirector.onPrematureResponseClosed(requestPipeChannel.currentRequest, responsePipeChannel.currentResponse, proxiedIOException.e);
         }
 
         close();
       }
       catch (HttpProtocolException e)
       {
-        proxyDirector.onResponseHttpProtocolError(requestPipeChannel.currentRequest, responsePipeChannel.currentResponse, currentConnectionParameters, e.getMessage());
+        proxyDirector.onResponseHttpProtocolError(requestPipeChannel.currentRequest, responsePipeChannel.currentResponse, e.getMessage());
         close();
       }
       catch (EndProxiedRequestException e)
@@ -213,7 +211,7 @@ class PipedExchangeChannel
       {
         if (!requestPipeChannel.isMessageComplete() || !responsePipeChannel.isMessageComplete())
         {
-          proxyDirector.onPrematureResponseClosed(requestPipeChannel.currentRequest, responsePipeChannel.currentResponse, currentConnectionParameters, proxiedIOException.e);
+          proxyDirector.onPrematureResponseClosed(requestPipeChannel.currentRequest, responsePipeChannel.currentResponse, proxiedIOException.e);
         }
 
         close();
@@ -251,6 +249,7 @@ class PipedExchangeChannel
         responseSelectionKeys.put(currentConnectionParameters, currentResponseSelectionKey);
       }
 
+      responsePipeChannel.currentConnectionParameters = currentConnectionParameters;
       requestPipeChannel.currentWriteChannel = responsePipeChannel.currentReadChannel = serverSocketChannel;
       responsePipeChannel.overSSL = currentConnectionParameters.ssl;
       connectingServerChannel = false;
@@ -269,12 +268,12 @@ class PipedExchangeChannel
 
   void onResponse()
   {
-    proxyDirector.onResponseStart(requestPipeChannel.currentRequest, responsePipeChannel.currentResponse, currentConnectionParameters);
+    proxyDirector.onResponseStart(requestPipeChannel.currentRequest, responsePipeChannel.currentResponse);
   }
 
   void onResponseDone()
   {
-    proxyDirector.onResponseEnd(requestPipeChannel.currentRequest, responsePipeChannel.currentResponse, currentConnectionParameters);
+    proxyDirector.onResponseEnd(requestPipeChannel.currentRequest, responsePipeChannel.currentResponse);
   }
 
   void close()

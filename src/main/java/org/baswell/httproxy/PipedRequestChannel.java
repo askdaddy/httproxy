@@ -20,7 +20,7 @@ import java.nio.channels.SocketChannel;
 
 import static org.baswell.httproxy.PipedMessageChannelMethods.*;
 
-public class PipedRequestChannel extends PipedRequest
+class PipedRequestChannel extends PipedRequest
 {
   private final PipedExchangeChannel pipedExchangeChannel;
 

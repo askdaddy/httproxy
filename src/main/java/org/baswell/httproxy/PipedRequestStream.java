@@ -23,7 +23,7 @@ import java.net.Socket;
 
 import static org.baswell.httproxy.PipedMessageStreamMethods.*;
 
-public class PipedRequestStream extends PipedRequest
+class PipedRequestStream extends PipedRequest
 {
   private final PipedExchangeStream exchangeStream;
 

@@ -63,9 +63,8 @@ public interface ProxyDirector
    *
    * @param httpRequest The HTTP request that produced the given response.
    * @param httpResponse The HTTP response.
-   * @param connectionParameters The connection parameters used to connect to the server for this response.
    */
-  void onResponseStart(HttpRequest httpRequest, HttpResponse httpResponse, ConnectionParameters connectionParameters);
+  void onResponseStart(HttpRequest httpRequest, HttpResponse httpResponse);
 
   /**
    * After the given HTTP response has been sent to the client (including body). Modifying the given HTTP response here will
@@ -73,9 +72,8 @@ public interface ProxyDirector
    *
    * @param httpRequest The HTTP request that produced the given response.
    * @param httpResponse The HTTP response.
-   * @param connectionParameters The connection parameters used to connect to the server for this response.
    */
-  void onResponseEnd(HttpRequest httpRequest, HttpResponse httpResponse, ConnectionParameters connectionParameters);
+  void onResponseEnd(HttpRequest httpRequest, HttpResponse httpResponse);
 
   /**
    * Called when a HTTP request could not be correctly parsed.
@@ -92,7 +90,7 @@ public interface ProxyDirector
    * @param httpResponse The HTTP response. May be null.
    * @param errorDescription A description of the protocol error.
    */
-  void onResponseHttpProtocolError(HttpRequest httpRequest, HttpResponse httpResponse, ConnectionParameters connectionParameters, String errorDescription);
+  void onResponseHttpProtocolError(HttpRequest httpRequest, HttpResponse httpResponse, String errorDescription);
 
   /**
    * Called when the client connection was closed before the HTTP request was fully read or the response was returned.
@@ -109,7 +107,7 @@ public interface ProxyDirector
    * @param httpResponse The HTTP response. May be null.
    * @param e The IO exception that signaled the close.
    */
-  void onPrematureResponseClosed(HttpRequest httpRequest, HttpResponse httpResponse, ConnectionParameters connectionParameters, IOException e);
+  void onPrematureResponseClosed(HttpRequest httpRequest, HttpResponse httpResponse, IOException e);
 
   /**
    * The logger used by the HttProxy runtime.

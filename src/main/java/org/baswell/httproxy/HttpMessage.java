@@ -27,33 +27,36 @@ import static org.baswell.httproxy.Constants.*;
 
 abstract public class HttpMessage
 {
+  /**
+   * @return The status line of this message (ex. <i>GET /path/to/file/index.html HTTP/1.0</i>, <i>HTTP/1.0 200 OK</i>).
+   */
   abstract public String getStatusLine();
 
+  /**
+   * When did this message start.
+   */
   public final Date startedAt = new Date();
 
+  /**
+   * The HTTP headers of this message.
+   */
   public final List<HttpHeader> headers = new ArrayList<HttpHeader>();
 
+  /**
+   * When did this message end.
+   */
   public Date endedAt;
 
+  /**
+   * Attachments not used by HttProxy.
+   */
   public final Map<String, Object> attachements = new HashMap<String, Object>();
 
-  HttpHeader addHeader(String headerLine)
-  {
-    int index = headerLine.indexOf(':');
-    if ((index > 0) && (index < (headerLine.length() - 1)))
-    {
-      String name = headerLine.substring(0, index).trim();
-      String value = headerLine.substring(index + 1, headerLine.length()).trim();
-      HttpHeader header = new HttpHeader(name, value);
-      headers.add(header);
-      return header;
-    }
-    else
-    {
-      return null;
-    }
-  }
-
+  /**
+   *
+   * @param name The header name
+   * @return All headers that have the given <i>name</i>.
+   */
   public List<HttpHeader> getHeaders(String name)
   {
     List<HttpHeader> headersWithName = new ArrayList<HttpHeader>();
@@ -67,6 +70,11 @@ abstract public class HttpMessage
     return headersWithName;
   }
 
+  /**
+   *
+   * @param name The HTTP header name to retrieve.
+   * @return The value from the first header found that matches the given <i>name</i> or <code>null</code> if no match is found.
+   */
   public String getHeaderValue(String name)
   {
     for (HttpHeader header : headers)
@@ -80,6 +88,13 @@ abstract public class HttpMessage
     return null;
   }
 
+  /**
+   * If a header with the given <i>name</i> exists then the value for this header is replaced. If no header matches the given
+   * <i>name</i> then a new header is added with the given <i>value</i>.
+   *
+   * @param name The HTTP header name.
+   * @param value The HTTP header value.
+   */
   public void setOrAddHeader(String name, String value)
   {
     for (HttpHeader header : headers)
@@ -116,7 +131,22 @@ abstract public class HttpMessage
     bytes.add(LF);
 
     return bytes.toArray();
-
   }
 
+  HttpHeader addHeader(String headerLine)
+  {
+    int index = headerLine.indexOf(':');
+    if ((index > 0) && (index < (headerLine.length() - 1)))
+    {
+      String name = headerLine.substring(0, index).trim();
+      String value = headerLine.substring(index + 1, headerLine.length()).trim();
+      HttpHeader header = new HttpHeader(name, value);
+      headers.add(header);
+      return header;
+    }
+    else
+    {
+      return null;
+    }
+  }
 }

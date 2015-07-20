@@ -39,9 +39,7 @@ class SelectorLoop implements Runnable
   SelectorLoop(NIOProxyDirector proxyDirector)
   {
     this.proxyDirector = proxyDirector;
-
-    ProxyLogger log = proxyDirector.getLogger();
-    this.log = log == null ? new DevNullLogger() : log;
+    this.log = new WrappedLogger(proxyDirector.getLogger());
   }
 
   void start() throws IOException

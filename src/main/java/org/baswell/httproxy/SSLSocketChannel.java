@@ -16,22 +16,17 @@
 package org.baswell.httproxy;
 
 import javax.net.ssl.SSLEngine;
-import javax.net.ssl.SSLEngineResult;
-import javax.net.ssl.SSLEngineResult.HandshakeStatus;
-import javax.net.ssl.SSLSession;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketAddress;
-import java.net.SocketOption;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
-import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
 /**
  * A wrapper around a real {@link SocketChannel} that adds SSL support.
  */
-public class SSLSocketChannel extends SocketChannel implements WrappedSocketChannel
+class SSLSocketChannel extends SocketChannel implements WrappedSocketChannel
 {
   public static void main(String[] args) throws Exception
   {
@@ -64,10 +59,8 @@ public class SSLSocketChannel extends SocketChannel implements WrappedSocketChan
   {
     super(socketChannel.provider());
 
-    log = log == null ? new DevNullLogger() : log;
-
     this.socketChannel = socketChannel;
-    this.log = log;
+    this.log = new WrappedLogger(log);
 
     logDebug = log.logDebugs();
 
@@ -96,7 +89,6 @@ public class SSLSocketChannel extends SocketChannel implements WrappedSocketChan
     }
     else
     {
-//      wrap(false, ByteBuffer.allocate(0));
       int totalRead = applicationBuffer.position() - intialPosition;
       if (logDebug) log.info("read: total read: " + totalRead);
       return totalRead;
@@ -118,7 +110,6 @@ public class SSLSocketChannel extends SocketChannel implements WrappedSocketChan
     }
     else
     {
-      //unwrap(false, ByteBuffer.allocate(0));
       int totalWritten = applicationBuffer.position() - intialPosition;
       if (logDebug) log.debug("write: total written: " + totalWritten + " amount available in network outbound: " + applicationBuffer.remaining());
       return totalWritten;
@@ -189,48 +180,6 @@ public class SSLSocketChannel extends SocketChannel implements WrappedSocketChan
   }
 
   @Override
-  public SocketAddress getLocalAddress() throws IOException
-  {
-    return null;
-  }
-
-  @Override
-  public SocketChannel bind(SocketAddress local) throws IOException
-  {
-    return null;
-  }
-
-  @Override
-  public <T> SocketChannel setOption(SocketOption<T> name, T value) throws IOException
-  {
-    return null;
-  }
-
-  @Override
-  public <T> T getOption(SocketOption<T> name) throws IOException
-  {
-    return null;
-  }
-
-  @Override
-  public Set<SocketOption<?>> supportedOptions()
-  {
-    return null;
-  }
-
-  @Override
-  public SocketChannel shutdownInput() throws IOException
-  {
-    return null;
-  }
-
-  @Override
-  public SocketChannel shutdownOutput() throws IOException
-  {
-    return null;
-  }
-
-  @Override
   public Socket socket ()
   {
     return socketChannel.socket();
@@ -258,12 +207,6 @@ public class SSLSocketChannel extends SocketChannel implements WrappedSocketChan
   public boolean finishConnect ()throws IOException
   {
     return socketChannel.finishConnect();
-  }
-
-  @Override
-  public SocketAddress getRemoteAddress() throws IOException
-  {
-    return null;
   }
 
   @Override

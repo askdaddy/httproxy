@@ -15,6 +15,7 @@
  */
 package org.baswell.httproxy;
 
+import javax.net.ssl.SSLContext;
 import java.io.IOException;
 import java.nio.channels.NotYetBoundException;
 import java.nio.channels.ServerSocketChannel;
@@ -26,6 +27,8 @@ import java.nio.channels.SocketChannel;
 public class ServerSocketChannelAcceptLoop
 {
   private final SelectorDispatcher selectorDispatcher;
+
+  private final NIOProxyDirector proxyDirector;
 
   private volatile boolean started;
 
@@ -49,11 +52,12 @@ public class ServerSocketChannelAcceptLoop
    */
   public ServerSocketChannelAcceptLoop(NIOProxyDirector proxyDirector, int numSelectorThreads)
   {
-    this.selectorDispatcher = new SelectorDispatcher(proxyDirector, numSelectorThreads);
+    this.proxyDirector = proxyDirector;
+    selectorDispatcher = new SelectorDispatcher(proxyDirector, numSelectorThreads);
   }
 
   /**
-   * Accepts incoming requests on {@code serverSocketChannel} and dispatches the request to one of the selector threads. This method
+   * Accepts incoming non-SSL requests on {@code serverSocketChannel} and dispatches the request to one of the selector threads. This method
    * blocks the calling thread until {@link #stop()} is called by another thread or the given {@code ServerSocketChannel} is no longer bound.
    *
    * @param serverSocketChannel The channel to accept incoming client requests on. The channel must be bound before calling this method.
@@ -63,6 +67,26 @@ public class ServerSocketChannelAcceptLoop
    */
   public void start(ServerSocketChannel serverSocketChannel) throws NotYetBoundException, SecurityException, IOException
   {
+    start(serverSocketChannel, null);
+  }
+
+    /**
+     * Accepts incoming requests on {@code serverSocketChannel} and dispatches the request to one of the selector threads. This method
+     * blocks the calling thread until {@link #stop()} is called by another thread or the given {@code ServerSocketChannel} is no longer bound.
+     *
+     * @param serverSocketChannel The channel to accept incoming client requests on. The channel must be bound before calling this method.
+     * @param sslContext If non-null incoming HTTP requests will be processed over SSL using this SSLContext. If null the incoming HTTP requests will be non-ssl.
+     * @throws NotYetBoundException If the given ServerSocketChannel is not already bound.
+     * @throws SecurityException If a security manager exists and its checkAccept method doesn't allow the operation.
+     * @throws IOException If an I/O error occurs when waiting for a connection.
+     */
+  public void start(ServerSocketChannel serverSocketChannel, SSLContext sslContext) throws NotYetBoundException, SecurityException, IOException
+  {
+    if (sslContext != null)
+    {
+      serverSocketChannel = new SSLServerSocketChannel(serverSocketChannel, sslContext, proxyDirector);
+    }
+
     try
     {
       started = true;

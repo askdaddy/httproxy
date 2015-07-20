@@ -21,7 +21,7 @@ import java.io.OutputStream;
 
 import static org.baswell.httproxy.PipedMessageStreamMethods.*;
 
-public class PipedResponseStream extends PipedResponse
+class PipedResponseStream extends PipedResponse
 {
   private final PipedExchangeStream exchangeStream;
 

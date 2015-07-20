@@ -35,14 +35,6 @@ public interface ProxyLogger
   void debug(String message);
 
   /**
-   * Log if at level debug are higher.
-   *
-   * @param message The log message.
-   * @param exception An exception to include with the given message.               
-   */
-  void debug(String message, Throwable exception);
-
-  /**
    * @return Is logging at level info enabled?
    */
   boolean logInfos();
@@ -53,19 +45,6 @@ public interface ProxyLogger
    * @param message The log message.
    */
   void info(String message);
-
-  /**
-   * Log if at level info are higher.
-   *
-   * @param message The log message.
-   * @param exception An exception to include with the given message.
-   */
-  void info(String message, Throwable exception);
-
-  /**
-   * @return Is logging at level warn enabled?
-   */
-  boolean logWarns();
 
   /**
    * Log if at level warn higher.
@@ -81,11 +60,6 @@ public interface ProxyLogger
    * @param exception An exception to include with the given message.
    */
   void warn(String message, Throwable exception);
-
-  /**
-   * @return Is logging at level error enabled?
-   */
-  boolean logErrors();
 
   /**
    * Log if at level error are higher.

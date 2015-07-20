@@ -19,15 +19,11 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 import java.io.IOException;
 import java.net.ServerSocket;
-import java.net.SocketAddress;
-import java.net.SocketOption;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ExecutorService;
 
 /**
  * <p>A wrapper around a real {@link ServerSocketChannel} that produces {@link SSLSocketChannel} on {@link #accept()}. The real ServerSocketChannel must be
@@ -35,7 +31,7 @@ import java.util.concurrent.ExecutorService;
  *
  * @see SSLSocketChannel
  */
-public class SSLServerSocketChannel extends ServerSocketChannel
+class SSLServerSocketChannel extends ServerSocketChannel
 {
   /**
    * Should the SSLSocketChannels created from the accept method be put in blocking mode. Default is {@code false}.
@@ -92,30 +88,6 @@ public class SSLServerSocketChannel extends ServerSocketChannel
   }
 
   @Override
-  public ServerSocketChannel bind(SocketAddress local, int backlog) throws IOException
-  {
-    return null;
-  }
-
-  @Override
-  public <T> ServerSocketChannel setOption(SocketOption<T> name, T value) throws IOException
-  {
-    return null;
-  }
-
-  @Override
-  public <T> T getOption(SocketOption<T> name) throws IOException
-  {
-    return null;
-  }
-
-  @Override
-  public Set<SocketOption<?>> supportedOptions()
-  {
-    return null;
-  }
-
-  @Override
   public ServerSocket socket()
   {
     return serverSocketChannel.socket();
@@ -135,12 +107,6 @@ public class SSLServerSocketChannel extends ServerSocketChannel
     sslEngine.setEnabledCipherSuites(filterArray(sslEngine.getEnabledCipherSuites(), includedCipherSuites, excludedCipherSuites));
 
     return new SSLSocketChannel(channel, sslEngine, proxyDirector.getSSLThreadPool(), proxyDirector.getLogger());
-  }
-
-  @Override
-  public SocketAddress getLocalAddress() throws IOException
-  {
-    return null;
   }
 
   @Override

@@ -1,3 +1,18 @@
+/*
+ * Copyright 2015 Corey Baswell
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.baswell.httproxy;
 
 import javax.net.ssl.SSLEngine;
@@ -20,9 +35,11 @@ public class SSLEngineBuffer
 
   private final ByteBuffer networkOutboundBuffer;
 
-  private final ByteBuffer emptyInboundBuffer;
+  private final int applicationBufferSize;
 
-  private final ByteBuffer emptyOutboundBuffer;
+  private final ByteBuffer unwrapBuffer;
+
+  private final ByteBuffer wrapBuffer;
 
   private final ProxyLogger log;
 
@@ -45,20 +62,111 @@ public class SSLEngineBuffer
     networkOutboundBuffer = ByteBuffer.allocate(networkBufferSize);
     networkOutboundBuffer.flip();
 
-    emptyInboundBuffer = ByteBuffer.allocate(session.getApplicationBufferSize());
 
-    emptyOutboundBuffer = ByteBuffer.allocate(networkBufferSize);
-    emptyOutboundBuffer.flip();
+    /*
+     * Due to synchronous nature of HTTP, A response for a request should (almost never) be returned before a request
+     * is fully sent. With this assertion in mind we assume that if a read operation is taking place and the SSLEngine
+     * needs to perform a wrap operation, all data wrapped will be SSL related. Likewise when performing a write if a unwrap
+     * needs to take place we assume only SSL data will be retrieved from the network channel. Therefore the following buffers
+     * are used to satisfy SSLEngine.wrap and SSLEngine.unwrap but are otherwise ignored.
+     *
+     * There is an edge case that will break this. In Section 8.2.2 of RFC 2616 the following is stated:
+     *
+     * An HTTP/1.1 (or later) client sending a message-body SHOULD monitor the network connection for an error status
+     * while it is transmitting the request. If the client sees an error status, it SHOULD immediately cease
+     * transmitting the body.
+     *
+     * So if that were to ever take place and data was actually ever placed in the unwrapBuffer that would break this
+     * implementation because that data would never get back to the application.
+     */
+
+    applicationBufferSize = session.getApplicationBufferSize();
+    unwrapBuffer = ByteBuffer.allocate(applicationBufferSize);
+    wrapBuffer = ByteBuffer.allocate(applicationBufferSize);
+    wrapBuffer.flip();
   }
 
   int unwrap(ByteBuffer applicationInputBuffer) throws IOException
   {
-    int unwrapped = unwrap(applicationInputBuffer, emptyOutboundBuffer, true);
-    wrap(emptyOutboundBuffer, applicationInputBuffer, false);
-    return unwrapped;
+    if (applicationInputBuffer.capacity() < applicationBufferSize)
+    {
+      throw new IOException("Buffer size must be at least: " + applicationBufferSize + " for non-blocking IO over SSL.");
+    }
+
+    if (unwrapBuffer.position() != 0)
+    {
+      unwrapBuffer.flip();
+      while (unwrapBuffer.hasRemaining() && applicationInputBuffer.hasRemaining())
+      {
+        applicationInputBuffer.put(unwrapBuffer.get());
+      }
+      unwrapBuffer.compact();
+    }
+
+    int totalUnwrapped = 0;
+    int unwrapped, wrapped;
+
+    do
+    {
+      totalUnwrapped += unwrapped = doUnwrap(applicationInputBuffer);
+      wrapped = doWrap(wrapBuffer);
+    }
+    while (unwrapped > 0 || wrapped > 0 && (networkOutboundBuffer.hasRemaining() && networkInboundBuffer.hasRemaining()));
+
+    return totalUnwrapped;
   }
 
-  synchronized private int unwrap(ByteBuffer applicationInputBuffer, ByteBuffer applicationOutputBuffer, boolean wrapIfNecessary) throws IOException
+  int wrap(ByteBuffer applicationOutboundBuffer) throws IOException
+  {
+    int wrapped = doWrap(applicationOutboundBuffer);
+    doUnwrap(unwrapBuffer);
+    return wrapped;
+  }
+
+  int flushNetworkOutbound() throws IOException
+  {
+    return send(socketChannel, networkOutboundBuffer);
+  }
+
+  int send(SocketChannel channel, ByteBuffer buffer) throws IOException
+  {
+    int totalWritten = 0;
+    while (buffer.hasRemaining())
+    {
+      int written = channel.write(buffer);
+
+      if (written == 0)
+      {
+        break;
+      }
+      else if (written < 0)
+      {
+        return (totalWritten == 0) ? written : totalWritten;
+      }
+      totalWritten += written;
+    }
+    if (logDebug) log.debug("sent: " + totalWritten + " out to socket");
+    return totalWritten;
+  }
+
+  void close()
+  {
+    try
+    {
+      sslEngine.closeInbound();
+    }
+    catch (Exception e)
+    {}
+
+    try
+    {
+      sslEngine.closeOutbound();
+    }
+    catch (Exception e)
+    {}
+  }
+
+  private int doUnwrap(ByteBuffer applicationInputBuffer) throws IOException
   {
     if (logDebug) log.info("unwrap:");
 
@@ -116,10 +224,6 @@ public class SSLEngineBuffer
                 break;
 
               case NEED_WRAP:
-                if (wrapIfNecessary)
-                {
-                  //wrap(applicationOutputBuffer, applicationInputBuffer, false);
-                }
                 break UNWRAP;
 
               case NEED_TASK:
@@ -155,14 +259,7 @@ public class SSLEngineBuffer
     return totalReadFromChannel;
   }
 
-  int wrap(ByteBuffer applicationOutboundBuffer) throws IOException
-  {
-    int wrapped = wrap(applicationOutboundBuffer, emptyInboundBuffer, true);
-    unwrap(emptyInboundBuffer, applicationOutboundBuffer, false);
-    return wrapped;
-  }
-
-  synchronized private int wrap(ByteBuffer applicationOutboundBuffer, ByteBuffer applicationInboundBuffer, boolean unwrapIfNecessary) throws IOException
+  private int doWrap(ByteBuffer applicationOutboundBuffer) throws IOException
   {
     if (logDebug) log.info("wrap");
     int totalWritten = 0;
@@ -180,7 +277,7 @@ public class SSLEngineBuffer
 
     // 2. Any data in application buffer ? Wrap that and send it to peer.
 
-    WRAP: do
+    WRAP: while (true)
     {
       networkOutboundBuffer.compact();
       SSLEngineResult result = sslEngine.wrap(applicationOutboundBuffer, networkOutboundBuffer);
@@ -203,18 +300,12 @@ public class SSLEngineBuffer
       switch (result.getStatus())
       {
         case OK:
-          SSLEngineResult.HandshakeStatus handshakeStatus = result.getHandshakeStatus();
-          switch (handshakeStatus)
+          switch (result.getHandshakeStatus())
           {
             case NEED_WRAP:
-              System.out.println("HERE");
               break;
 
             case NEED_UNWRAP:
-              if (unwrapIfNecessary)
-              {
-                //unwrap(applicationInboundBuffer, applicationOutboundBuffer, false);
-              }
               break WRAP;
 
             case NEED_TASK:
@@ -223,7 +314,14 @@ public class SSLEngineBuffer
               break;
 
             case NOT_HANDSHAKING:
-              break WRAP;
+              if (applicationOutboundBuffer.hasRemaining())
+              {
+                break;
+              }
+              else
+              {
+                break WRAP;
+              }
           }
           break;
 
@@ -240,56 +338,12 @@ public class SSLEngineBuffer
           break WRAP;
       }
     }
-    while (true);
 
     if (logDebug) log.info("wrap: return: " + totalWritten);
     return totalWritten;
   }
 
-  int flushNetworkOutbound() throws IOException
-  {
-    return send(socketChannel, networkOutboundBuffer);
-  }
-
-  int send(SocketChannel channel, ByteBuffer buffer) throws IOException
-  {
-    int totalWritten = 0;
-    while (buffer.hasRemaining())
-    {
-      int written = channel.write(buffer);
-
-      if (written == 0)
-      {
-        break;
-      }
-      else if (written < 0)
-      {
-        return (totalWritten == 0) ? written : totalWritten;
-      }
-      totalWritten += written;
-    }
-    if (logDebug) log.debug("sent: " + totalWritten + " out to socket");
-    return totalWritten;
-  }
-
-  void close()
-  {
-    try
-    {
-      sslEngine.closeInbound();
-    }
-    catch (Exception e)
-    {}
-
-    try
-    {
-      sslEngine.closeOutbound();
-    }
-    catch (Exception e)
-    {}
-  }
-
-  void runHandshakeTasks ()
+  private void runHandshakeTasks ()
   {
     while (true)
     {
@@ -300,10 +354,8 @@ public class SSLEngineBuffer
       }
       else
       {
-        //executorService.execute(runnable);
-        runnable.run();
+        executorService.execute(runnable);
       }
     }
-    System.out.println("******* -> " + sslEngine.getHandshakeStatus());
   }
 }

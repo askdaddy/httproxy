@@ -30,7 +30,7 @@ class SocketChannelMultiplexer extends ConnectionMultiplexer<SocketChannel>
   SocketChannelMultiplexer(ExecutorService executorService, ProxyLogger logger)
   {
     this.executorService = executorService;
-    this.logger = logger == null ? new DevNullLogger() : logger;
+    this.logger = new WrappedLogger(logger);
   }
 
   @Override

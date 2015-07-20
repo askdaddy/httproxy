@@ -27,7 +27,7 @@ abstract public class SimpleProxyDirector implements ProxyDirector
   /**
    * @see #getBufferSize()
    */
-  public int bufferSize = 1024 * 16;
+  public int bufferSize = 16916;
 
   public int logLevel =  SimpleProxyLogger.INFO_LEVEL;
 
@@ -78,13 +78,13 @@ abstract public class SimpleProxyDirector implements ProxyDirector
   {}
 
   @Override
-  public void onResponseStart(HttpRequest httpRequest, HttpResponse httpResponse, ConnectionParameters connectionParameters)
+  public void onResponseStart(HttpRequest httpRequest, HttpResponse httpResponse)
   {
     System.out.println(" <-- " + httpResponse.getStatusLine());
   }
 
   @Override
-  public void onResponseEnd(HttpRequest httpRequest, HttpResponse response, ConnectionParameters connectionParameters)
+  public void onResponseEnd(HttpRequest httpRequest, HttpResponse response)
   {}
 
   @Override
@@ -94,7 +94,7 @@ abstract public class SimpleProxyDirector implements ProxyDirector
   }
 
   @Override
-  public void onResponseHttpProtocolError(HttpRequest httpRequest, HttpResponse response, ConnectionParameters connectionParameters, String errorDescription)
+  public void onResponseHttpProtocolError(HttpRequest httpRequest, HttpResponse response, String errorDescription)
   {
     System.err.println("Response protocol error: " + errorDescription);
   }
@@ -107,7 +107,7 @@ abstract public class SimpleProxyDirector implements ProxyDirector
   }
 
   @Override
-  public void onPrematureResponseClosed(HttpRequest httpRequest, HttpResponse response, ConnectionParameters connectionParameters, IOException e)
+  public void onPrematureResponseClosed(HttpRequest httpRequest, HttpResponse response, IOException e)
   {
     System.err.println("Response premature closed: " + e.getMessage());
     e.printStackTrace();

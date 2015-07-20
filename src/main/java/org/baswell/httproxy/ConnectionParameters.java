@@ -17,6 +17,8 @@ package org.baswell.httproxy;
 
 import javax.net.ssl.SSLContext;
 import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Describes the connection parameters to a proxied server.
@@ -25,15 +27,30 @@ import java.security.NoSuchAlgorithmException;
  */
 public class ConnectionParameters
 {
+  /**
+   * Is this connection over SSL.
+   */
   public final boolean ssl;
 
+  /**
+   * The IP address or hostname.
+   */
   public final String ipOrHost;
 
+  /**
+   * The TCP port.
+   */
   public final int port;
 
+  /**
+   * if this connection is over SSL, the SSLContext used for the SSL exchanges.
+   */
   public final SSLContext sslContext;
 
-  public Object attachement;
+  /**
+   * Attachments not used by HttProxy.
+   */
+  public final Map<String, Object> attachements = new HashMap<String, Object>();
 
   /**
    *

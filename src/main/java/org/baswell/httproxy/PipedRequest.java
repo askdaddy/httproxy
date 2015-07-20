@@ -19,7 +19,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
-abstract public class PipedRequest extends PipedMessage
+abstract class PipedRequest extends PipedMessage
 {
   abstract boolean overSSL();
 

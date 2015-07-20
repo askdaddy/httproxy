@@ -5,7 +5,7 @@ the server connection to be proxied.
 ## Getting Started
 
 ### Direct Download
-You can download <a href="https://github.com/baswerc/httproxy/releases/download/v1.1/httproxy-1.1.jar">httproxy-1.1.jar</a> directly and place in your project.
+You can download <a href="https://github.com/baswerc/httproxy/releases/download/v1.2/httproxy-1.2.jar">httproxy-1.2.jar</a> directly and place in your project.
 
 ### Using Maven
 Add the following dependency into your Maven project:
@@ -14,7 +14,7 @@ Add the following dependency into your Maven project:
 <dependency>
     <groupId>org.baswell</groupId>
     <artifactId>httproxy</artifactId>
-    <version>1.1</version>
+    <version>1.2</version>
 </dependency>
 ````
 
@@ -36,21 +36,19 @@ HTTProxy has two implementations. One that uses standard blocking IO and one tha
 <a href="http://baswerc.github.io/httproxy/javadoc/org/baswell/httproxy/ProxyDirector.html">ProxyDirector</a> you must implement that performs the following:
 
 * Provides proxy configuration.
-* Provides the server connection to proxy requests to.
+* Provides the parameters to server connections that are proxied.
 * Receives proxy event notifications.
-* Tell HTTProxy to modify or add proxied HTTP headers.
+* Modify HTTP requests and responses.
 
 ### Blocking IO
 For blocking IO use <a href="http://baswerc.github.io/httproxy/javadoc/org/baswell/httproxy/ServerSocketAcceptLoop.html">ServerSocketAcceptLoop</a>. You must implement
-the interface <a href="http://baswerc.github.io/httproxy/javadoc/org/baswell/httproxy/IOProxyDirector.html">IOProxyDirector</a> and pass it and an `ExecutorService` to `ServerSocketAcceptLoop` when constructed.
+the interface <a href="http://baswerc.github.io/httproxy/javadoc/org/baswell/httproxy/IOProxyDirector.html">IOProxyDirector</a> and pass it to `ServerSocketAcceptLoop` when constructed.
 Once you are ready to start listening for incoming HTTP requests to proxy call the `start()` method which blocks the current thread for the lifetime of the server accept loop.
 
 ```Java
 IOProxyDirector proxyDirector = new MyIOProxyDirector();
-ThreadPoolExecutor threadPool = new ThreadPoolExecutor(250, 2000, 25,
-     TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
 ServerSocket serverSocket = new ServerSocket(8080);
-ServerSocketAcceptLoop acceptLoop = new ServerSocketAcceptLoop(proxyDirector, threadPool);
+ServerSocketAcceptLoop acceptLoop = new ServerSocketAcceptLoop(proxyDirector);
 
 // blocks until acceptLoop.stop() is called from another thread or
 // the server socket throws an IOException
@@ -85,34 +83,9 @@ ServerSocketChannelAcceptLoop acceptLoop = new ServerSocketChannelAcceptLoop(pro
 ServerSocketChannel serverSocketChannel = ServerSocketChannel.open();
 serverSocketChannel.socket().bind(new InetSocketAddress(443));
 
-SSLContext sslContext = SSLContext.getInstance("TLS");
-ThreadPoolExecutor sslThreadPool = new ThreadPoolExecutor(250, 2000, 25, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
-
-SSLServerSocketChannel sslServerSocketChannel = new SSLServerSocketChannel(serverSocketChannel, serverContext, sslThreadPool, proxyDirector.getLogger());
+SSLServerSocketChannel sslServerSocketChannel = new SSLServerSocketChannel(serverSocketChannel, serverContext, proxyDirector);
 acceptLoop.start(sslServerSocketChannel);
 ```
-
-Use can also use <a href="http://baswerc.github.io/httproxy/javadoc/org/baswell/httproxy/SSLSocketChannel.html">SSLSocketChannel</a> to create non-blocking, SSL connections to a proxied server.
-```Java
-public class MyNIOProxyDirector implements NIOProxyDirector
-{
-...
-
-  public SocketChannel connectToProxiedHost(ProxiedRequest request) throws IOException
-  {
-    InetSocketAddress address = new InetSocketAddress("localhost", 443);
-    SocketChannel socketChannel = SocketChannel.open(address);
-    socketChannel.configureBlocking(false);
-
-    SSLContext sslContext = SSLContext.getInstance("TLS");
-    SSLEngine sslEngine = sslContext.createSSLEngine(address.getHostName(), address.getPort());
-    sslEngine.setUseClientMode(true);
-
-    return new SSLSocketChannel(socketChannel, sslEngine, sslThreadPool, getLogger());
-  }
-}
-```
-
 
 # Additional Documentation
 

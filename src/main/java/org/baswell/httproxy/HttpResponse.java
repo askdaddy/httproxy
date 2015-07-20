@@ -15,22 +15,53 @@
  */
 package org.baswell.httproxy;
 
+/**
+ * A proxied HTTP response. The response sent back to the client can be modified in {@link ProxyDirector#onResponseStart(HttpRequest, HttpResponse)}.
+ */
 public class HttpResponse extends HttpMessage
 {
+  /**
+   * Is this response the first in the exchange (multiple requests & responses can be processed over the same connection).
+   */
   public final boolean firstInExchange;
 
+  /**
+   * Was the response returned over a SSL connection.
+   */
   public final boolean overSSL;
 
+  /**
+   * The connection this response was returned from.
+   */
+  public final ConnectionParameters connectionParameters;
+
+  /**
+   * The HTTP version of this response.
+   */
   public String version;
 
+  /**
+   * The status of the response (ex. 200, 404, 500).
+   */
   public int statusCode;
 
+  /**
+   * The reason phrase of the status code (ex. "OK", "Not Found", "Internal Server Error").
+   */
   public String reasonPhrase;
 
-  public HttpResponse(boolean firstInExchange, boolean overSSL, String responseLine)
+  /**
+   *
+   * @param firstInExchange Is this response the first in the exchange.
+   * @param overSSL Was the response returned over a SSL connection.
+   * @param connectionParameters The connection this response was returned from.
+   * @param responseLine The HTTP status line ex. <i>HTTP/1.0 200 OK</i>.
+   */
+  public HttpResponse(boolean firstInExchange, boolean overSSL, ConnectionParameters connectionParameters, String responseLine)
   {
     this.firstInExchange = firstInExchange;
     this.overSSL = overSSL;
+    this.connectionParameters = connectionParameters;
 
     String[] values = new String(responseLine).trim().split(" ");
     for (int i = 0; i < values.length; i++)
@@ -70,21 +101,40 @@ public class HttpResponse extends HttpMessage
     }
   }
 
-  public HttpResponse(String reasonPhrase, boolean firstInExchange, boolean overSSL, String version, int statusCode)
+  /**
+   *
+   * @param firstInExchange Is this response the first in the exchange.
+   * @param overSSL Was the response returned over a SSL connection.
+   * @param connectionParameters The connection this response was returned from.
+   * @param version The HTTP version of this response.
+   * @param statusCode The status of the response (ex. 200, 404, 500).
+   * @param reasonPhrase The reason phrase of the status code (ex. "OK", "Not Found", "Internal Server Error").
+   */
+  public HttpResponse(boolean firstInExchange, boolean overSSL, ConnectionParameters connectionParameters, String version, int statusCode, String reasonPhrase)
   {
-    this.reasonPhrase = reasonPhrase;
     this.firstInExchange = firstInExchange;
     this.overSSL = overSSL;
+    this.connectionParameters = connectionParameters;
     this.version = version;
     this.statusCode = statusCode;
+    this.reasonPhrase = reasonPhrase;
   }
 
+  /**
+   * @return ex. <i>HTTP/1.0 200 OK</i>.
+   */
   @Override
   public String getStatusLine()
   {
     return version + " " + statusCode + " " + reasonPhrase;
   }
 
+  /**
+   * Add a Set-Cookie header to this response. Should be called from {@link ProxyDirector#onResponseStart(HttpRequest, HttpResponse)}
+   * for the client to see this additional header.
+   *
+   * @param cookie The HTTP cookie to add.
+   */
   public void setCookie(HttpCookie cookie)
   {
     headers.add(new HttpHeader("Set-Cookie", cookie.toString()));

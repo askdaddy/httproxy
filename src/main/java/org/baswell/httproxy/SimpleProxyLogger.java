@@ -51,12 +51,6 @@ public class SimpleProxyLogger implements ProxyLogger
   }
 
   @Override
-  public void debug(String message, Throwable exception)
-  {
-    log(System.out, message, exception, DEBUG_LEVEL);
-  }
-
-  @Override
   public boolean logInfos()
   {
     return INFO_LEVEL >= level;
@@ -69,18 +63,6 @@ public class SimpleProxyLogger implements ProxyLogger
   }
 
   @Override
-  public void info(String message, Throwable exception)
-  {
-    log(System.out, message, exception, INFO_LEVEL);
-  }
-
-  @Override
-  public boolean logWarns()
-  {
-    return WARN_LEVEL >= level;
-  }
-
-  @Override
   public void warn(String message)
   {
     log(System.err, message, null, WARN_LEVEL);
@@ -90,12 +72,6 @@ public class SimpleProxyLogger implements ProxyLogger
   public void warn(String message, Throwable exception)
   {
     log(System.err, message, exception, WARN_LEVEL);
-  }
-
-  @Override
-  public boolean logErrors()
-  {
-    return ERROR_LEVEL >= level;
   }
 
   @Override

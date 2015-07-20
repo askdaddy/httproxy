@@ -48,8 +48,7 @@ class PipedExchangeStream
     this.clientSocket = clientSocket;
     this.proxyDirector = proxyDirector;
 
-    ProxyLogger log = proxyDirector.getLogger();
-    this.log = log == null ? new DevNullLogger() : log;
+    this.log = new WrappedLogger(proxyDirector.getLogger());
 
     requestPipeStream = new PipedRequestStream(proxyDirector, this, clientSocket);
     responsePipeStream = new PipedResponseStream(proxyDirector, this, clientSocket.getOutputStream());
@@ -168,7 +167,7 @@ class PipedExchangeStream
           {
             if (!requestPipeStream.isMessageComplete() || !responsePipeStream.isMessageComplete())
             {
-              proxyDirector.onPrematureResponseClosed(requestPipeStream.currentRequest, responsePipeStream.currentResponse, currentConnectionParameters, proxiedIOException.e);
+              proxyDirector.onPrematureResponseClosed(requestPipeStream.currentRequest, responsePipeStream.currentResponse, proxiedIOException.e);
             }
           }
 
@@ -179,7 +178,7 @@ class PipedExchangeStream
       {
         if (!closed)
         {
-          proxyDirector.onResponseHttpProtocolError(requestPipeStream.currentRequest, responsePipeStream.currentResponse, currentConnectionParameters, e.getMessage());
+          proxyDirector.onResponseHttpProtocolError(requestPipeStream.currentRequest, responsePipeStream.currentResponse, e.getMessage());
           close();
         }
       }
@@ -222,6 +221,7 @@ class PipedExchangeStream
 
         requestPipeStream.currentOutputStream = serverSocket.getOutputStream();
 
+        responsePipeStream.currentConnectionParameters = currentConnectionParameters;
         responsePipeStream.currentInputStream = serverSocket.getInputStream();
         responsePipeStream.overSSL = currentConnectionParameters.ssl;
 
@@ -244,13 +244,13 @@ class PipedExchangeStream
 
   void onResponse() throws EndProxiedRequestException, IOException
   {
-    proxyDirector.onResponseStart(requestPipeStream.currentRequest, responsePipeStream.currentResponse, currentConnectionParameters);
+    proxyDirector.onResponseStart(requestPipeStream.currentRequest, responsePipeStream.currentResponse);
   }
 
   synchronized void onResponseDone() throws IOException
   {
     responsePipeStream.outputStream.flush();
-    proxyDirector.onResponseEnd(requestPipeStream.currentRequest, responsePipeStream.currentResponse, currentConnectionParameters);
+    proxyDirector.onResponseEnd(requestPipeStream.currentRequest, responsePipeStream.currentResponse);
     responsePipeStream.currentInputStream = null;
   }
 
