@@ -4,7 +4,7 @@ HTTProxy is a low overhead (in terms of memory and processing time) Java based H
 ## Getting Started
 
 ### Direct Download
-You can download <a href="https://github.com/baswerc/httproxy/releases/download/v1.2/httproxy-1.2.jar">httproxy-1.2.jar</a> directly and place in your project.
+You can download <a href="https://github.com/baswerc/httproxy/releases/download/v1.2/httproxy-1.2.jar">httproxy-1.2.jar</a> directly and place in your project. You will also need to download the <a href="https://bitbucket.org/trove4j/trove/downloads">Trove4j jar file</a>.
 
 ### Using Maven
 Add the following dependency into your Maven project:
