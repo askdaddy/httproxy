@@ -53,18 +53,19 @@ public class SSLEngineBuffer
 
   int unwrap(ByteBuffer applicationInputBuffer) throws IOException
   {
-    int unwrapped = unwrap(applicationInputBuffer, true);
+    int unwrapped = unwrap(applicationInputBuffer, emptyOutboundBuffer, true);
+    wrap(emptyOutboundBuffer, applicationInputBuffer, false);
     return unwrapped;
   }
 
-  synchronized private int unwrap(ByteBuffer applicationInputBuffer, boolean wrapIfNecessary) throws IOException
+  synchronized private int unwrap(ByteBuffer applicationInputBuffer, ByteBuffer applicationOutputBuffer, boolean wrapIfNecessary) throws IOException
   {
     if (logDebug) log.info("unwrap:");
 
     int totalReadFromChannel = 0;
 
     // Keep looping until peer has no more data ready or the applicationInboundBuffer is full
-    WRAP: do
+    UNWRAP: do
     {
       // 1. Pull data from peer into networkInboundBuffer
 
@@ -94,7 +95,7 @@ public class SSLEngineBuffer
       if (!networkInboundBuffer.hasRemaining())
       {
         networkInboundBuffer.compact();
-        wrap(emptyOutboundBuffer);
+        //wrap(applicationOutputBuffer, applicationInputBuffer, false);
         return totalReadFromChannel;
       }
 
@@ -115,8 +116,11 @@ public class SSLEngineBuffer
                 break;
 
               case NEED_WRAP:
-                wrap(emptyOutboundBuffer);
-                break WRAP;
+                if (wrapIfNecessary)
+                {
+                  //wrap(applicationOutputBuffer, applicationInputBuffer, false);
+                }
+                break UNWRAP;
 
               case NEED_TASK:
                 runHandshakeTasks();
@@ -130,7 +134,7 @@ public class SSLEngineBuffer
 
           case BUFFER_OVERFLOW:
             if (logDebug) log.debug("unwrap: buffer overflow");
-            break WRAP;
+            break UNWRAP;
 
           case CLOSED:
             if (logDebug) log.info("unwrap: exit: ssl closed");
@@ -153,10 +157,12 @@ public class SSLEngineBuffer
 
   int wrap(ByteBuffer applicationOutboundBuffer) throws IOException
   {
-    return wrap(applicationOutboundBuffer, true);
+    int wrapped = wrap(applicationOutboundBuffer, emptyInboundBuffer, true);
+    unwrap(emptyInboundBuffer, applicationOutboundBuffer, false);
+    return wrapped;
   }
 
-  synchronized private int wrap(ByteBuffer applicationOutboundBuffer, boolean unwrapIfNecessary) throws IOException
+  synchronized private int wrap(ByteBuffer applicationOutboundBuffer, ByteBuffer applicationInboundBuffer, boolean unwrapIfNecessary) throws IOException
   {
     if (logDebug) log.info("wrap");
     int totalWritten = 0;
@@ -201,11 +207,15 @@ public class SSLEngineBuffer
           switch (handshakeStatus)
           {
             case NEED_WRAP:
+              System.out.println("HERE");
               break;
 
             case NEED_UNWRAP:
-                unwrap(emptyInboundBuffer);
-                break WRAP;
+              if (unwrapIfNecessary)
+              {
+                //unwrap(applicationInboundBuffer, applicationOutboundBuffer, false);
+              }
+              break WRAP;
 
             case NEED_TASK:
               runHandshakeTasks();
@@ -213,7 +223,7 @@ public class SSLEngineBuffer
               break;
 
             case NOT_HANDSHAKING:
-              break;
+              break WRAP;
           }
           break;
 
@@ -230,7 +240,7 @@ public class SSLEngineBuffer
           break WRAP;
       }
     }
-    while (applicationOutboundBuffer.hasRemaining());
+    while (true);
 
     if (logDebug) log.info("wrap: return: " + totalWritten);
     return totalWritten;
@@ -258,6 +268,7 @@ public class SSLEngineBuffer
       }
       totalWritten += written;
     }
+    if (logDebug) log.debug("sent: " + totalWritten + " out to socket");
     return totalWritten;
   }
 
@@ -293,5 +304,6 @@ public class SSLEngineBuffer
         runnable.run();
       }
     }
+    System.out.println("******* -> " + sslEngine.getHandshakeStatus());
   }
 }

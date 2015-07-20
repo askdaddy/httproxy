@@ -76,11 +76,10 @@ public class NIOServer
     SimpleNIOProxyDirector proxyDirector = new SimpleNIOProxyDirector("ndmswsdv01.ndc.nasa.gov", 44301, sslContext, sslThreadPool);
     proxyDirector.logLevel = SimpleProxyLogger.DEBUG_LEVEL;
 
-    ServerSocketChannelAcceptLoop acceptLoop = new ServerSocketChannelAcceptLoop(proxyDirector);
+    ServerSocketChannelAcceptLoop acceptLoop = new ServerSocketChannelAcceptLoop(proxyDirector, 1);
 //    ServerSocketChannelAcceptLoop acceptLoop = new ServerSocketChannelAcceptLoop(new SimpleNIOProxyDirector("localhost", 48001));
 
 
-    /*
     KeyStore keyStore = KeyStore.getInstance("JKS");
     keyStore.load(new FileInputStream("test.keystore"), "changeit".toCharArray());
 
@@ -91,13 +90,12 @@ public class NIOServer
     SSLContext serverContext = SSLContext.getInstance("TLS");
     serverContext.init(keyManagers, new TrustManager[]{trustAll}, null);
 
-    //serverContext = SSLContext.getDefault();
-    */
+//    serverContext = SSLContext.getDefault();
 
     ServerSocketChannel serverSocketChannel = ServerSocketChannel.open();
     serverSocketChannel.socket().bind(new InetSocketAddress(9090));
 
-    //SSLServerSocketChannel sslServerSocketChannel = new SSLServerSocketChannel(serverSocketChannel, serverContext, proxyDirector);
-    acceptLoop.start(serverSocketChannel);
+    SSLServerSocketChannel sslServerSocketChannel = new SSLServerSocketChannel(serverSocketChannel, serverContext, proxyDirector);
+    acceptLoop.start(sslServerSocketChannel);
   }
 }
