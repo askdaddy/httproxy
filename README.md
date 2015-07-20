@@ -1,6 +1,5 @@
 # HTTProxy
-HTTProxy is a low overhead (in terms of memory and processing time) Java based HTTP proxy. It provides simple APIs you can use to sift HTTP request headers and determine
-the server connection to be proxied.
+HTTProxy is a low overhead (in terms of memory and processing time) Java based HTTP proxy. It provides a simple API you can use to view and modify HTTP requests and responses between a client and server.
 
 ## Getting Started
 
