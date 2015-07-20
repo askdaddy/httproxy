@@ -86,7 +86,11 @@ public class PipedMessageChannelMethods
           while ((remainingWriteAttempts-- > 0) && !writeBuffer.isEmpty())
           {
             int written = writeChannel.write(ByteBuffer.wrap(writeBuffer.toArray()));
-            if (written < writeBuffer.size())
+            if (written < 0)
+            {
+              return true;
+            }
+            else if (written < writeBuffer.size())
             {
               writeBuffer = writeBuffer.subList(written, writeBuffer.size());
             }

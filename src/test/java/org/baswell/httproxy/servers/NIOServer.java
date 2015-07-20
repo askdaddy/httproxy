@@ -73,7 +73,9 @@ public class NIOServer
 
 
 
-    SimpleNIOProxyDirector proxyDirector = new SimpleNIOProxyDirector("ndmswsdv01.ndc.nasa.gov", 48001);
+    SimpleNIOProxyDirector proxyDirector = new SimpleNIOProxyDirector("ndmswsdv01.ndc.nasa.gov", 44301, sslContext, sslThreadPool);
+    proxyDirector.logLevel = SimpleProxyLogger.DEBUG_LEVEL;
+
     ServerSocketChannelAcceptLoop acceptLoop = new ServerSocketChannelAcceptLoop(proxyDirector);
 //    ServerSocketChannelAcceptLoop acceptLoop = new ServerSocketChannelAcceptLoop(new SimpleNIOProxyDirector("localhost", 48001));
 

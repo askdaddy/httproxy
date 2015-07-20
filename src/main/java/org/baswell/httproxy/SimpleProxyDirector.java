@@ -29,6 +29,8 @@ abstract public class SimpleProxyDirector implements ProxyDirector
    */
   public int bufferSize = 1024 * 16;
 
+  public int logLevel =  SimpleProxyLogger.INFO_LEVEL;
+
   protected final String proxiedHost;
 
   protected final int proxiedPort;
@@ -114,6 +116,6 @@ abstract public class SimpleProxyDirector implements ProxyDirector
   @Override
   public ProxyLogger getLogger()
   {
-    return new SimpleProxyLogger(SimpleProxyLogger.INFO_LEVEL);
+    return new SimpleProxyLogger(logLevel);
   }
 }

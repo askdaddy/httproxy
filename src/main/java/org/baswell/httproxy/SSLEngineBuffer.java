@@ -1,19 +1,18 @@
 package org.baswell.httproxy;
 
-import com.sun.org.apache.xpath.internal.functions.FuncFalse;
-
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLEngineResult;
+import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLSession;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.SocketChannel;
-import java.nio.channels.WritableByteChannel;
 import java.util.concurrent.ExecutorService;
 
 public class SSLEngineBuffer
 {
+  private final SocketChannel socketChannel;
+
   private final SSLEngine sslEngine;
 
   private final ExecutorService executorService;
@@ -28,8 +27,9 @@ public class SSLEngineBuffer
 
   private final boolean logDebug;
 
-  public SSLEngineBuffer(SSLEngine sslEngine, ExecutorService executorService, ProxyLogger log)
+  public SSLEngineBuffer(SocketChannel socketChannel, SSLEngine sslEngine, ExecutorService executorService, ProxyLogger log)
   {
+    this.socketChannel = socketChannel;
     this.sslEngine = sslEngine;
     this.executorService = executorService;
     this.log = log;
@@ -44,10 +44,15 @@ public class SSLEngineBuffer
     networkOutboundBuffer = ByteBuffer.allocate(networkBufferSize);
     networkOutboundBuffer.flip();
 
-    emptyBuffer = ByteBuffer.allocate(0);
+    emptyBuffer = ByteBuffer.allocate(session.getApplicationBufferSize());
   }
 
-  synchronized int unwrap(SocketChannel socketChannel, ByteBuffer applicationInputBuffer, boolean wrapIfNecessary) throws IOException
+  int unwrap(ByteBuffer applicationInputBuffer) throws IOException
+  {
+    return unwrap(applicationInputBuffer, true);
+  }
+
+  synchronized private int unwrap(ByteBuffer applicationInputBuffer, boolean wrapIfNecessary) throws IOException
   {
     if (logDebug) log.info("unwrap:");
 
@@ -99,7 +104,7 @@ public class SSLEngineBuffer
               case NEED_WRAP:
                 if (wrapIfNecessary)
                 {
-                  wrap(socketChannel, emptyBuffer, false);
+                  wrap(emptyBuffer, false);
                 }
                 else
                 {
@@ -127,7 +132,7 @@ public class SSLEngineBuffer
 
           case BUFFER_UNDERFLOW:
             if (logDebug) log.debug("unwrap: buffer underflow");
-            break WRAP;
+            break;
         }
       }
       finally
@@ -140,7 +145,12 @@ public class SSLEngineBuffer
     return totalReadFromChannel;
   }
 
-  synchronized int wrap(SocketChannel socketChannel, ByteBuffer applicationOutboundBuffer, boolean unwrapIfNecessary) throws IOException
+  int wrap(ByteBuffer applicationOutboundBuffer) throws IOException
+  {
+    return wrap(applicationOutboundBuffer, true);
+  }
+
+  synchronized private int wrap(ByteBuffer applicationOutboundBuffer, boolean unwrapIfNecessary) throws IOException
   {
     if (logDebug) log.info("wrap");
     int totalWritten = 0;
@@ -190,7 +200,15 @@ public class SSLEngineBuffer
             case NEED_UNWRAP:
               if (unwrapIfNecessary)
               {
-                unwrap(socketChannel, emptyBuffer, false);
+                int writtenToChannel = unwrap(emptyBuffer, false);
+                if (writtenToChannel < 0)
+                {
+                  return totalWritten == 0 ? writtenToChannel : totalWritten;
+                }
+                else
+                {
+                  unwrapIfNecessary = false;
+                }
                 break;
               }
               else
@@ -227,6 +245,11 @@ public class SSLEngineBuffer
     return totalWritten;
   }
 
+  int flushNetworkOutbound() throws IOException
+  {
+    return send(socketChannel, networkOutboundBuffer);
+  }
+
   int send(SocketChannel channel, ByteBuffer buffer) throws IOException
   {
     int totalWritten = 0;
@@ -245,6 +268,23 @@ public class SSLEngineBuffer
       totalWritten += written;
     }
     return totalWritten;
+  }
+
+  void close()
+  {
+    try
+    {
+      sslEngine.closeInbound();
+    }
+    catch (Exception e)
+    {}
+
+    try
+    {
+      sslEngine.closeOutbound();
+    }
+    catch (Exception e)
+    {}
   }
 
   void runHandshakeTasks ()
