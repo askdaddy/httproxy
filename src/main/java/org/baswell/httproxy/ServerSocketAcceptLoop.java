@@ -21,6 +21,9 @@ import java.net.Socket;
 import java.nio.channels.NotYetBoundException;
 import java.util.concurrent.ExecutorService;
 
+/**
+ * Accepts and dispatches incoming requests on the given ServerSocket.
+ */
 public class ServerSocketAcceptLoop
 {
   private final ExchangeStreamDispatcher exchangeStreamDispatcher;

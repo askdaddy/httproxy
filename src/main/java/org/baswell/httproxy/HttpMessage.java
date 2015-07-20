@@ -25,6 +25,9 @@ import java.util.Map;
 
 import static org.baswell.httproxy.Constants.*;
 
+/**
+ * Base class for {@link HttpRequest} and {@link HttpResponse}.
+ */
 abstract public class HttpMessage
 {
   /**
