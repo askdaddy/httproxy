@@ -2,7 +2,6 @@ package org.baswell.httproxy;
 
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLEngineResult;
-import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLSession;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -21,7 +20,9 @@ public class SSLEngineBuffer
 
   private final ByteBuffer networkOutboundBuffer;
 
-  private final ByteBuffer emptyBuffer;
+  private final ByteBuffer emptyInboundBuffer;
+
+  private final ByteBuffer emptyOutboundBuffer;
 
   private final ProxyLogger log;
 
@@ -44,12 +45,16 @@ public class SSLEngineBuffer
     networkOutboundBuffer = ByteBuffer.allocate(networkBufferSize);
     networkOutboundBuffer.flip();
 
-    emptyBuffer = ByteBuffer.allocate(session.getApplicationBufferSize());
+    emptyInboundBuffer = ByteBuffer.allocate(session.getApplicationBufferSize());
+
+    emptyOutboundBuffer = ByteBuffer.allocate(networkBufferSize);
+    emptyOutboundBuffer.flip();
   }
 
   int unwrap(ByteBuffer applicationInputBuffer) throws IOException
   {
-    return unwrap(applicationInputBuffer, true);
+    int unwrapped = unwrap(applicationInputBuffer, true);
+    return unwrapped;
   }
 
   synchronized private int unwrap(ByteBuffer applicationInputBuffer, boolean wrapIfNecessary) throws IOException
@@ -84,7 +89,15 @@ public class SSLEngineBuffer
         }
       }
 
+
       networkInboundBuffer.flip();
+      if (!networkInboundBuffer.hasRemaining())
+      {
+        networkInboundBuffer.compact();
+        wrap(emptyOutboundBuffer);
+        return totalReadFromChannel;
+      }
+
       totalReadFromChannel += readFromChannel;
 
       try
@@ -102,15 +115,8 @@ public class SSLEngineBuffer
                 break;
 
               case NEED_WRAP:
-                if (wrapIfNecessary)
-                {
-                  wrap(emptyBuffer, false);
-                }
-                else
-                {
-                  break WRAP;
-                }
-                break;
+                wrap(emptyOutboundBuffer);
+                break WRAP;
 
               case NEED_TASK:
                 runHandshakeTasks();
@@ -198,23 +204,8 @@ public class SSLEngineBuffer
               break;
 
             case NEED_UNWRAP:
-              if (unwrapIfNecessary)
-              {
-                int writtenToChannel = unwrap(emptyBuffer, false);
-                if (writtenToChannel < 0)
-                {
-                  return totalWritten == 0 ? writtenToChannel : totalWritten;
-                }
-                else
-                {
-                  unwrapIfNecessary = false;
-                }
-                break;
-              }
-              else
-              {
+                unwrap(emptyInboundBuffer);
                 break WRAP;
-              }
 
             case NEED_TASK:
               runHandshakeTasks();
@@ -298,7 +289,8 @@ public class SSLEngineBuffer
       }
       else
       {
-        executorService.execute(runnable);
+        //executorService.execute(runnable);
+        runnable.run();
       }
     }
   }
