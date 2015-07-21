@@ -95,6 +95,8 @@ public class NIOServer
     ServerSocketChannel serverSocketChannel = ServerSocketChannel.open();
     serverSocketChannel.socket().bind(new InetSocketAddress(9090));
 
-    acceptLoop.start(serverSocketChannel, serverContext);
+    SSLServerSocketChannel sslServerSocketChannel = new SSLServerSocketChannel(serverSocketChannel, serverContext, proxyDirector);
+
+    acceptLoop.start(sslServerSocketChannel);
   }
 }

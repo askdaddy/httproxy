@@ -31,7 +31,7 @@ import java.util.List;
  *
  * @see SSLSocketChannel
  */
-class SSLServerSocketChannel extends ServerSocketChannel
+public class SSLServerSocketChannel extends ServerSocketChannel
 {
   /**
    * Should the SSLSocketChannels created from the accept method be put in blocking mode. Default is {@code false}.
