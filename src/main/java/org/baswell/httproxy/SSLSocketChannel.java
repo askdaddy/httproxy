@@ -28,17 +28,6 @@ import java.util.concurrent.ExecutorService;
  */
 class SSLSocketChannel extends SocketChannel implements WrappedSocketChannel
 {
-  public static void main(String[] args) throws Exception
-  {
-    ByteBuffer buffer = ByteBuffer.allocate(10);
-
-    for (int i = 0; i < 20; i++)
-    {
-      System.out.println(buffer.position() + " " + buffer.limit() + " " + buffer.remaining() + " " + buffer.hasRemaining());
-      buffer.put((byte)i);
-    }
-  }
-
   private final SocketChannel socketChannel;
 
   private final SSLEngineBuffer sslEngineBuffer;
