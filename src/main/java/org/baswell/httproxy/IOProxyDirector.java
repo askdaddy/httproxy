@@ -32,4 +32,16 @@ public interface IOProxyDirector extends ProxyDirector
    * @return The thread pool used to execute blocking IO requests & responses.
    */
   ExecutorService getIOThreadPool();
+
+  /**
+   *
+   * @return Use a background thread to expire exchanges when the Keep-Alive timeout from the server expires.
+   */
+  boolean useKeepAliveReaper();
+
+  /**
+   *
+   * @return The maximum seconds the keep alive background thread will sleep between checks.
+   */
+  int getKeepAliveSleepSeconds();
 }

@@ -92,6 +92,39 @@ abstract public class HttpMessage
   }
 
   /**
+   * Keep-Alive: timeout=5, max=99
+   * @return Returns the number of timeout seconds specified in the Keep-Alive or <code>null</code> if no timeout is specified.
+   */
+  public Integer getKeepAliveTimeoutSeconds()
+  {
+    for (HttpHeader header : headers)
+    {
+      if (header.name.equalsIgnoreCase("Keep-Alive"))
+      {
+        int index = header.value.indexOf("timeout=");
+        if (index >= 0)
+        {
+          String timeout = header.value.substring(index + "timeout=".length());
+          index = timeout.indexOf(",");
+          if (index > 0)
+          {
+            timeout = timeout.substring(0, index);
+          }
+
+          try
+          {
+            return new Integer(timeout);
+          }
+          catch (NumberFormatException e)
+          {}
+        }
+      }
+    }
+
+    return null;
+  }
+
+  /**
    * If a header with the given <i>name</i> exists then the value for this header is replaced. If no header matches the given
    * <i>name</i> then a new header is added with the given <i>value</i>.
    *

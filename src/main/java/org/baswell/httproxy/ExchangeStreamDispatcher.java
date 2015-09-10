@@ -23,9 +23,12 @@ class ExchangeStreamDispatcher
 {
   private final IOProxyDirector proxyDirector;
 
+  private final KeepAliveTimeoutReaper keepAliveTimeoutReaper;
+
   ExchangeStreamDispatcher(IOProxyDirector proxyDirector)
   {
     this.proxyDirector = proxyDirector;
+    keepAliveTimeoutReaper = new KeepAliveTimeoutReaper(proxyDirector);
   }
 
   void dispatch(Socket socket)
@@ -51,6 +54,10 @@ class ExchangeStreamDispatcher
         }
       });
 
+      if (proxyDirector.useKeepAliveReaper())
+      {
+        keepAliveTimeoutReaper.watch(exchangeStream);
+      }
     }
     catch (IOException e)
     {}

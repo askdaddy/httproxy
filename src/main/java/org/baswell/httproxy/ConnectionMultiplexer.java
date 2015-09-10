@@ -18,6 +18,7 @@ package org.baswell.httproxy;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 abstract class ConnectionMultiplexer<Connection>
 {
@@ -25,7 +26,7 @@ abstract class ConnectionMultiplexer<Connection>
 
   abstract void closeQuitely(Connection connection);
 
-  private Map<ConnectionParameters, Connection> connections = new HashMap<ConnectionParameters, Connection>();
+  Map<ConnectionParameters, Connection> connections = new ConcurrentHashMap<ConnectionParameters, Connection>();
 
   public Connection getConnectionFor(ConnectionParameters connectionParameters) throws IOException
   {

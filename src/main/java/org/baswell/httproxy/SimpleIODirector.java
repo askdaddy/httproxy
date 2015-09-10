@@ -54,4 +54,16 @@ public class SimpleIODirector extends SimpleProxyDirector implements IOProxyDire
   {
     return ioThreadPool;
   }
+
+  @Override
+  public boolean useKeepAliveReaper()
+  {
+    return false;
+  }
+
+  @Override
+  public int getKeepAliveSleepSeconds()
+  {
+    return 0;
+  }
 }

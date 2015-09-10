@@ -23,14 +23,17 @@ class SocketMultiplexer extends ConnectionMultiplexer<Socket>
   @Override
   protected Socket connect(ConnectionParameters connectionParameters) throws IOException
   {
+    Socket socket;
     if (connectionParameters.ssl)
     {
-      return connectionParameters.sslContext.getSocketFactory().createSocket(connectionParameters.ipOrHost, connectionParameters.port);
+      socket = connectionParameters.sslContext.getSocketFactory().createSocket(connectionParameters.ipOrHost, connectionParameters.port);
     }
     else
     {
-      return new Socket(connectionParameters.ipOrHost, connectionParameters.port);
+      socket = new Socket(connectionParameters.ipOrHost, connectionParameters.port);
     }
+
+    return socket;
   }
 
   @Override

@@ -19,8 +19,12 @@ import java.io.IOException;
 import java.net.Socket;
 import java.util.concurrent.CountDownLatch;
 
-class PipedExchangeStream
+class PipedExchangeStream implements ReapedPipedExchange
 {
+  final SocketMultiplexer socketMultiplexer;
+
+  volatile boolean closed;
+
   private final Socket clientSocket;
 
   private final IOProxyDirector proxyDirector;
@@ -29,17 +33,17 @@ class PipedExchangeStream
 
   private final PipedResponseStream responsePipeStream;
 
-  private final SocketMultiplexer socketMultiplexer;
-
   private ConnectionParameters currentConnectionParameters;
 
   private volatile boolean connectingServerSocket;
 
-  private volatile boolean closed;
-
   private final CountDownLatch responseStartSignal = new CountDownLatch(1);
 
   private final ProxyLogger log;
+
+  Integer lastKeepAliveTimeoutSeconds;
+
+  long lastExchangeAt;
 
   PipedExchangeStream(Socket clientSocket, IOProxyDirector proxyDirector) throws IOException
   {
@@ -249,12 +253,34 @@ class PipedExchangeStream
 
   synchronized void onResponseDone() throws IOException
   {
+    lastExchangeAt = System.currentTimeMillis();
+    lastKeepAliveTimeoutSeconds = responsePipeStream.currentResponse.getKeepAliveTimeoutSeconds();
+
     responsePipeStream.outputStream.flush();
     proxyDirector.onResponseEnd(requestPipeStream.currentRequest, responsePipeStream.currentResponse);
     responsePipeStream.currentInputStream = null;
   }
 
-  void close()
+  @Override
+  public boolean active()
+  {
+    return requestPipeStream.readState != PipedMessage.ReadState.READING_STATUS;
+  }
+
+  @Override
+  public Integer getLastKeepAliveTimeoutSeconds()
+  {
+    return lastKeepAliveTimeoutSeconds;
+  }
+
+  @Override
+  public long getLastExchangeAt()
+  {
+    return lastExchangeAt;
+  }
+
+  @Override
+  public void close()
   {
     if (!closed)
     {
@@ -266,8 +292,7 @@ class PipedExchangeStream
           clientSocket.close();
         }
         catch (Exception e)
-        {
-        }
+        {}
       }
 
       synchronized (this)
