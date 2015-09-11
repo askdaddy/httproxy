@@ -8,5 +8,7 @@ interface ReapedPipedExchange
 
   long getLastExchangeAt();
 
+  boolean closed();
+
   void close();
 }

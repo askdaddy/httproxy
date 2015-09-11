@@ -280,6 +280,12 @@ class PipedExchangeStream implements ReapedPipedExchange
   }
 
   @Override
+  public boolean closed()
+  {
+    return closed;
+  }
+
+  @Override
   public void close()
   {
     if (!closed)

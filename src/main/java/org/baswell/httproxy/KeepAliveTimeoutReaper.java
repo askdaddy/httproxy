@@ -35,7 +35,11 @@ class KeepAliveTimeoutReaper implements Runnable
       for (int i = exchanges.size() - 1; i >= 0; i--)
       {
         ReapedPipedExchange exchange = exchanges.get(i);
-        if (!exchange.active())
+        if (exchange.closed())
+        {
+          exchanges.remove(i);
+        }
+        else if (!exchange.active())
         {
           Integer timeoutSecs = exchange.getLastKeepAliveTimeoutSeconds();
           if (timeoutSecs != null)
