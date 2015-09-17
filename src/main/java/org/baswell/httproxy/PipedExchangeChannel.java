@@ -100,7 +100,14 @@ class PipedExchangeChannel
         }
         else if (!requestPipeChannel.isMessageComplete() || !responsePipeChannel.isMessageComplete())
         {
-          proxyDirector.onPrematureRequestClosed(requestPipeChannel.currentRequest, proxiedIOException.e);
+          if (proxiedIOException.reading)
+          {
+            proxyDirector.onPrematureRequestClosed(requestPipeChannel.currentRequest, proxiedIOException.e);
+          }
+          else
+          {
+            proxyDirector.onPrematureResponseClosed(requestPipeChannel.currentRequest, responsePipeChannel.currentResponse, proxiedIOException.e);
+          }
         }
 
         close();
@@ -145,7 +152,14 @@ class PipedExchangeChannel
         }
         else if (!requestPipeChannel.isMessageComplete() || !responsePipeChannel.isMessageComplete())
         {
-          proxyDirector.onPrematureResponseClosed(requestPipeChannel.currentRequest, responsePipeChannel.currentResponse, proxiedIOException.e);
+          if (proxiedIOException.reading)
+          {
+            proxyDirector.onPrematureResponseClosed(requestPipeChannel.currentRequest, responsePipeChannel.currentResponse, proxiedIOException.e);
+          }
+          else
+          {
+            proxyDirector.onPrematureRequestClosed(requestPipeChannel.currentRequest, proxiedIOException.e);
+          }
         }
 
         close();

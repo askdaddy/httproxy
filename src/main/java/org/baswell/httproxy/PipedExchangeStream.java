@@ -84,7 +84,7 @@ class PipedExchangeStream implements ReapedPipedExchange
         }
         catch (IOException e)
         {
-          throw new ProxiedIOException(requestPipeStream.currentRequest, e);
+          throw new ProxiedIOException(requestPipeStream.currentRequest, true, e);
         }
       }
     }
@@ -96,7 +96,14 @@ class PipedExchangeStream implements ReapedPipedExchange
         {
           if (!requestPipeStream.isMessageComplete() || !responsePipeStream.isMessageComplete())
           {
-            proxyDirector.onPrematureRequestClosed(requestPipeStream.currentRequest, proxiedIOException.e);
+            if (proxiedIOException.reading)
+            {
+              proxyDirector.onPrematureRequestClosed(requestPipeStream.currentRequest, proxiedIOException.e);
+            }
+            else
+            {
+              proxyDirector.onPrematureResponseClosed(requestPipeStream.currentRequest, responsePipeStream.currentResponse, proxiedIOException.e);
+            }
           }
         }
 
@@ -159,7 +166,7 @@ class PipedExchangeStream implements ReapedPipedExchange
           {}
           catch (IOException e)
           {
-            throw new ProxiedIOException(responsePipeStream.currentResponse, e);
+            throw new ProxiedIOException(responsePipeStream.currentResponse, true, e);
           }
         }
       }
@@ -171,7 +178,14 @@ class PipedExchangeStream implements ReapedPipedExchange
           {
             if (!requestPipeStream.isMessageComplete() || !responsePipeStream.isMessageComplete())
             {
-              proxyDirector.onPrematureResponseClosed(requestPipeStream.currentRequest, responsePipeStream.currentResponse, proxiedIOException.e);
+              if (proxiedIOException.reading)
+              {
+                proxyDirector.onPrematureResponseClosed(requestPipeStream.currentRequest, responsePipeStream.currentResponse, proxiedIOException.e);
+              }
+              else
+              {
+                proxyDirector.onPrematureRequestClosed(requestPipeStream.currentRequest, proxiedIOException.e);
+              }
             }
           }
 

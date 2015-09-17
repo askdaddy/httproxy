@@ -46,7 +46,7 @@ class PipedMessageChannelMethods
 
         if (read == -1)
         {
-          throw new ProxiedIOException(messagePipe.currentMessage, new IOException("Connection closed."));
+          throw new ProxiedIOException(messagePipe.currentMessage, true, new IOException("Connection closed."));
         }
         else if (read == 0)
         {
@@ -65,7 +65,7 @@ class PipedMessageChannelMethods
     }
     catch (IOException e)
     {
-      throw new ProxiedIOException(messagePipe.currentMessage, e);
+      throw new ProxiedIOException(messagePipe.currentMessage, true, e);
     }
   }
 
@@ -145,7 +145,7 @@ class PipedMessageChannelMethods
     }
     catch (IOException e)
     {
-      throw new ProxiedIOException(messagePipe.currentMessage, e);
+      throw new ProxiedIOException(messagePipe.currentMessage, false, e);
     }
   }
 }

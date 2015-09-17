@@ -21,11 +21,14 @@ class ProxiedIOException extends Exception
 {
   final HttpMessage message;
 
+  final boolean reading;
+
   final IOException e;
 
-  ProxiedIOException(HttpMessage message, IOException e)
+  ProxiedIOException(HttpMessage message, boolean reading, IOException e)
   {
     this.message = message;
+    this.reading = reading;
     this.e = e;
   }
 }
