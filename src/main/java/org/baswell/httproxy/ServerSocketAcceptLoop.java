@@ -28,12 +28,15 @@ public class ServerSocketAcceptLoop
 {
   private final ExchangeStreamDispatcher exchangeStreamDispatcher;
 
+  private final IOProxyDirector proxyDirector;
+
   private volatile boolean started;
 
   private ServerSocket serverSocket;
 
   public ServerSocketAcceptLoop(IOProxyDirector proxyDirector)
   {
+    this.proxyDirector = proxyDirector;
     this.exchangeStreamDispatcher = new ExchangeStreamDispatcher(proxyDirector);
   }
 
@@ -57,6 +60,11 @@ public class ServerSocketAcceptLoop
         Socket socket = serverSocket.accept();
         if (socket != null)
         {
+          Integer socketTimeout = proxyDirector.getSocketReadTimeoutMilliseconds();
+          if (socketTimeout != null && socketTimeout > 0)
+          {
+            serverSocket.setSoTimeout(socketTimeout);
+          }
           exchangeStreamDispatcher.dispatch(socket);
         }
       }

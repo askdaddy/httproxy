@@ -44,6 +44,12 @@ public class SimpleIODirector extends SimpleProxyDirector implements IOProxyDire
   }
 
   @Override
+  public Integer getSocketReadTimeoutMilliseconds()
+  {
+    return null;
+  }
+
+  @Override
   public int getSleepSecondsOnReadWait()
   {
     return sleepSecondsOnReadWait;

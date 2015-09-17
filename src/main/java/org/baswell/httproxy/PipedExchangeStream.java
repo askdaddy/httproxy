@@ -236,6 +236,11 @@ class PipedExchangeStream implements ReapedPipedExchange
       {
         Socket serverSocket = socketMultiplexer.getConnectionFor(currentConnectionParameters);
         serverSocket.setKeepAlive(true); // Use keep alives so we know when the far end has shutdown the socket.
+        Integer socketTimeout = proxyDirector.getSocketReadTimeoutMilliseconds();
+        if (socketTimeout != null && socketTimeout > 0)
+        {
+          serverSocket.setSoTimeout(socketTimeout);
+        }
 
         requestPipeStream.currentOutputStream = serverSocket.getOutputStream();
 

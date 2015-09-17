@@ -23,6 +23,14 @@ import java.util.concurrent.ExecutorService;
 public interface IOProxyDirector extends ProxyDirector
 {
   /**
+   * The maximum milliseconds a read operation on a socket will block (for either client or server) before a SocketTimeoutException
+   * is thrown.
+   *
+   * @return The socket read timeout in milliseconds or <code>null</code> if not timeout is desired.
+   */
+  Integer getSocketReadTimeoutMilliseconds();
+
+  /**
    *
    * @return The number of seconds to sleep when a Socket's inputstream is still open but no content is available.
    */
