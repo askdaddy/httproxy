@@ -119,6 +119,11 @@ public class HttpRequest extends HttpMessage
     return method + " " + path + " " + version;
   }
 
+  public String getURL()
+  {
+    return (overSSL ? "https://" : "http://") + getHost() + path;
+  }
+
   /**
    *
    * @return The value of the <i>Host</i> header or <code>null</code> if not Host header is present.
