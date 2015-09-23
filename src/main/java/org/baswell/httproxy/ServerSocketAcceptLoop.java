@@ -63,7 +63,7 @@ public class ServerSocketAcceptLoop
           Integer socketTimeout = proxyDirector.getSocketReadTimeoutMilliseconds();
           if (socketTimeout != null && socketTimeout > 0)
           {
-            serverSocket.setSoTimeout(socketTimeout);
+            socket.setSoTimeout(socketTimeout);
           }
           exchangeStreamDispatcher.dispatch(socket);
         }
