@@ -17,6 +17,7 @@ package org.baswell.httproxy;
 
 import javax.net.ssl.SSLContext;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.concurrent.ExecutorService;
 
 /**
@@ -71,5 +72,11 @@ public class SimpleIODirector extends SimpleProxyDirector implements IOProxyDire
   public int getKeepAliveSleepSeconds()
   {
     return 0;
+  }
+
+  @Override
+  public OutputStream modifyResponseContentSentToClient(HttpRequest httpRequest, HttpResponse httpResponse, OutputStream clientOutputStream)
+  {
+    return null;
   }
 }

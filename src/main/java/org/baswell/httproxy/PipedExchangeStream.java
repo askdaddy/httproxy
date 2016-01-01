@@ -33,6 +33,8 @@ class PipedExchangeStream implements ReapedPipedExchange
 
   private final PipedResponseStream responsePipeStream;
 
+  private final ClientOutputStream clientOutputStream;
+
   private ConnectionParameters currentConnectionParameters;
 
   private volatile boolean connectingServerSocket;
@@ -55,7 +57,8 @@ class PipedExchangeStream implements ReapedPipedExchange
     this.log = new WrappedLogger(proxyDirector.getLogger());
 
     requestPipeStream = new PipedRequestStream(proxyDirector, this, clientSocket);
-    responsePipeStream = new PipedResponseStream(proxyDirector, this, clientSocket.getOutputStream());
+    clientOutputStream = new ClientOutputStream(clientSocket.getOutputStream());
+    responsePipeStream = new PipedResponseStream(proxyDirector, this, clientOutputStream);
 
     socketMultiplexer = new SocketMultiplexer();
   }
@@ -270,6 +273,11 @@ class PipedExchangeStream implements ReapedPipedExchange
     proxyDirector.onResponseStart(requestPipeStream.currentRequest, responsePipeStream.currentResponse);
   }
 
+  void onResponseHeaderSent()
+  {
+    clientOutputStream.wrappedOutputStream = proxyDirector.modifyResponseContentSentToClient(requestPipeStream.currentRequest, responsePipeStream.currentResponse, clientOutputStream.rawOutputStream);
+  }
+
   synchronized void onResponseDone() throws IOException
   {
     lastExchangeAt = System.currentTimeMillis();
@@ -278,6 +286,7 @@ class PipedExchangeStream implements ReapedPipedExchange
     responsePipeStream.outputStream.flush();
     proxyDirector.onResponseEnd(requestPipeStream.currentRequest, responsePipeStream.currentResponse);
     responsePipeStream.currentInputStream = null;
+    clientOutputStream.wrappedOutputStream = null;
   }
 
   @Override

@@ -58,7 +58,7 @@ public interface ProxyDirector
   void onRequestEnd(HttpRequest httpRequest, ConnectionParameters connectionParameters);
 
   /**
-   * Before the given HTTP response is sent back to the client.. The HTTP response (status line and headers) can be modified here
+   * Before the given HTTP response is sent back to the client. The HTTP response (status line and headers) can be modified here
    * before it is sent back to the client.
    *
    * @param httpRequest The HTTP request that produced the given response.

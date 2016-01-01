@@ -62,6 +62,7 @@ class PipedResponseStream extends PipedResponse
   {
     exchangeStream.onResponse();
     outputStream.write(currentResponse.toBytes());
+    exchangeStream.onResponseHeaderSent();
   }
 
   @Override
