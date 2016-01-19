@@ -30,8 +30,7 @@ public interface ProxyDirector
   int getBufferSize();
 
   /**
-   * Before the given HTTP request is sent to the server. The HTTP request (status line and headers) can be modified here
-   * before it is sent to the server.
+   * Before the given HTTP request is sent to the server. The HTTP request (status line and headers) can be modified here55.
    *
    * @param httpRequest The HTTP request.
    * @return The server connection the given httpRequest will be proxied to. If <code>null</code> is a returned a 404 will be
