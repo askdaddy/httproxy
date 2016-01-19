@@ -145,6 +145,22 @@ abstract public class HttpMessage
     headers.add(new HttpHeader(name, value));
   }
 
+  /**
+   * Removes all HTTP headers with the given <i>name</i>.
+   *
+   * @param name The HTTP header name to remove.
+   */
+  public void removeHeader(String name)
+  {
+    for (int i = headers.size() - 1; i >= 0; i--)
+    {
+      if (headers.get(i).name.equals(name))
+      {
+        headers.remove(i);
+      }
+    }
+  }
+
   @Override
   public String toString()
   {
