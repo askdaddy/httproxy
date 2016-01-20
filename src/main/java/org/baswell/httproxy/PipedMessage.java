@@ -56,7 +56,7 @@ abstract class PipedMessage
 
   int chunkedNextBytesRead;
 
-  ProcessChunkedState processChunkedState;
+  ReadChunkedInputState processChunkedState;
 
 
   PipedMessage(ProxyDirector proxyDirector)
@@ -144,7 +144,7 @@ abstract class PipedMessage
           {
             if (header.value.equalsIgnoreCase("chunked"))
             {
-              processChunkedState = ProcessChunkedState.READ_BYTE_COUNT;
+              processChunkedState = ReadChunkedInputState.READ_BYTE_COUNT;
             }
             else
             {
@@ -214,7 +214,7 @@ abstract class PipedMessage
               chunkedNextBytesTotal = Integer.parseInt(line.trim(), 16);
               if (chunkedNextBytesTotal == 0)
               {
-                processChunkedState = ProcessChunkedState.READ_LAST_LINE;
+                processChunkedState = ReadChunkedInputState.READ_LAST_LINE;
               }
               else if (chunkedNextBytesTotal < 0)
               {
@@ -223,7 +223,7 @@ abstract class PipedMessage
               else
               {
                 chunkedNextBytesRead = 0;
-                processChunkedState = ProcessChunkedState.READ_BYTES;
+                processChunkedState = ReadChunkedInputState.READ_BYTES;
               }
             }
             catch (Exception e)
@@ -242,7 +242,7 @@ abstract class PipedMessage
           {
             readBuffer.position(readBufferPosition + remainingBytesToRead);
             chunkedNextBytesTotal = chunkedNextBytesRead = 0;
-            processChunkedState = ProcessChunkedState.CLEAR_READ_BYTES_TERMINATOR;
+            processChunkedState = ReadChunkedInputState.CLEAR_READ_BYTES_TERMINATOR;
           }
           else
           {
@@ -254,7 +254,7 @@ abstract class PipedMessage
         case CLEAR_READ_BYTES_TERMINATOR:
           if (readNextLine(false) != null)
           {
-            processChunkedState = ProcessChunkedState.READ_BYTE_COUNT;
+            processChunkedState = ReadChunkedInputState.READ_BYTE_COUNT;
           }
           break;
 
@@ -328,13 +328,5 @@ abstract class PipedMessage
     READING_FIXED_LENGTH_CONTENT,
     READING_CHUNKED_CONTENT,
     DONE;
-  }
-
-  enum ProcessChunkedState
-  {
-    READ_BYTE_COUNT,
-    READ_BYTES,
-    CLEAR_READ_BYTES_TERMINATOR,
-    READ_LAST_LINE;
   }
 }
