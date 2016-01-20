@@ -8,7 +8,7 @@ import java.util.Arrays;
 
 import static org.baswell.httproxy.Constants.*;
 
-class ModifiedOutputStream extends OutputStream implements ModifiedOutputBridge
+class ModifiedOutputStream extends OutputStream implements ModifiedOutput
 {
   private final HttpResponse response;
 
@@ -38,12 +38,12 @@ class ModifiedOutputStream extends OutputStream implements ModifiedOutputBridge
     if ("chunked".equalsIgnoreCase(response.getHeaderValue("Transfer-Encoding")))
     {
       inputChunked = true;
+      inputBuffer = new TByteArrayList();
       chunkedInputState = ReadChunkedInputState.READ_BYTE_COUNT;
     }
     else
     {
       inputChunked = false;
-      inputBuffer = new TByteArrayList();
 
       /*
        * Since the response is being modified we don't know the final length. Will have to send this back chunked.
@@ -51,12 +51,11 @@ class ModifiedOutputStream extends OutputStream implements ModifiedOutputBridge
       response.removeHeader("Content-Length");
       response.setOrAddHeader("Transfer-Encoding", "chunked");
     }
-
   }
 
   public void done() throws IOException
   {
-    modifier.complete(this);
+    modifier.responseComplete(this);
 
     writeBuffer();
 
@@ -87,7 +86,7 @@ class ModifiedOutputStream extends OutputStream implements ModifiedOutputBridge
   }
 
   @Override
-  public void push(byte[] bytes) throws IOException
+  public void write(byte[] bytes) throws IOException
   {
     outputBuffer.add(bytes);
     if (outputBuffer.size() >= minimumResponseChunkSize)
@@ -100,7 +99,7 @@ class ModifiedOutputStream extends OutputStream implements ModifiedOutputBridge
   {
     if (!inputChunked)
     {
-      modifier.push(bytes, this);
+      modifier.modifyAndWrite(bytes, this);
     }
     else
     {
@@ -109,15 +108,14 @@ class ModifiedOutputStream extends OutputStream implements ModifiedOutputBridge
 
       while (!inputBuffer.isEmpty() && !needMoreBytes)
       {
-        byte[] lineBytes;
         String line;
         switch (chunkedInputState)
         {
           case READ_BYTE_COUNT:
-            lineBytes = readNextInputLine();
+            byte[] lineBytes = readNextInputLine();
             if (lineBytes != null)
             {
-              line = new String(bytes);
+              line = new String(lineBytes);
               try
               {
                 chunkedLineRemaining = Integer.parseInt(line.trim(), 16);
@@ -149,7 +147,7 @@ class ModifiedOutputStream extends OutputStream implements ModifiedOutputBridge
           case READ_BYTES:
             int bytesToRead = Math.min(chunkedLineRemaining, inputBuffer.size());
 
-            modifier.push(inputBuffer.toArray(0, bytesToRead), this);
+            modifier.modifyAndWrite(inputBuffer.toArray(0, bytesToRead), this);
             inputBuffer.remove(0, bytesToRead);
 
             chunkedLineRemaining -= bytesToRead;
@@ -171,6 +169,7 @@ class ModifiedOutputStream extends OutputStream implements ModifiedOutputBridge
             break;
 
           case READ_LAST_LINE:
+            inputBuffer.clear();
             // No more application data
             break;
         }

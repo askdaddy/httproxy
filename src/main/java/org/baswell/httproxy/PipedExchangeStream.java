@@ -47,6 +47,8 @@ class PipedExchangeStream implements ReapedPipedExchange
 
   long lastExchangeAt;
 
+  ModifiedOutputStream modifiedResponseStream;
+
   PipedExchangeStream(Socket clientSocket, IOProxyDirector proxyDirector) throws IOException
   {
     clientSocket.setKeepAlive(true); // Use keep alives so we know when the far end has shutdown the socket.
@@ -271,15 +273,22 @@ class PipedExchangeStream implements ReapedPipedExchange
   void onResponse() throws EndProxiedRequestException, IOException
   {
     proxyDirector.onResponseStart(requestPipeStream.currentRequest, responsePipeStream.currentResponse);
+    ResponseContentModifier responseContentModifier = proxyDirector.getResponseModifier(requestPipeStream.currentRequest, responsePipeStream.currentResponse);
+    modifiedResponseStream = responseContentModifier != null ? new ModifiedOutputStream(responsePipeStream.currentResponse, responseContentModifier, clientOutputStream.rawOutputStream, 20) : null;
   }
 
   void onResponseHeaderSent()
   {
-    clientOutputStream.wrappedOutputStream = proxyDirector.modifyResponseContentSentToClient(requestPipeStream.currentRequest, responsePipeStream.currentResponse, clientOutputStream.rawOutputStream);
+    clientOutputStream.wrappedOutputStream = modifiedResponseStream;
   }
 
   synchronized void onResponseDone() throws IOException
   {
+    if (modifiedResponseStream != null)
+    {
+      modifiedResponseStream.done();
+    }
+
     lastExchangeAt = System.currentTimeMillis();
     lastKeepAliveTimeoutSeconds = responsePipeStream.currentResponse.getKeepAliveTimeoutSeconds();
 

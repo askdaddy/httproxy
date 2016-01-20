@@ -75,8 +75,8 @@ public class SimpleIODirector extends SimpleProxyDirector implements IOProxyDire
   }
 
   @Override
-  public OutputStream modifyResponseContentSentToClient(HttpRequest httpRequest, HttpResponse httpResponse, OutputStream clientOutputStream)
+  public ResponseContentModifier getResponseModifier(HttpRequest httpRequest, HttpResponse httpResponse)
   {
-    return null;
+    return new PassThroughModifier();
   }
 }

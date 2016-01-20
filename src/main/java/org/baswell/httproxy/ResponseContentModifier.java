@@ -2,9 +2,12 @@ package org.baswell.httproxy;
 
 import java.io.IOException;
 
+/**
+ *
+ */
 public interface ResponseContentModifier
 {
-  void push(byte[] bytes, ModifiedOutputBridge bridge) throws IOException;
+  void modifyAndWrite(byte[] bytes, ModifiedOutput modifiedOutput) throws IOException;
 
-  void complete(ModifiedOutputBridge bridge) throws IOException;
+  void responseComplete(ModifiedOutput modifiedOutput) throws IOException;
 }
