@@ -1,16 +1,17 @@
 package org.baswell.httproxy;
 
 import java.io.IOException;
+import java.io.OutputStream;
 
 class PassThroughModifier implements ResponseContentModifier
 {
   @Override
-  public void modifyAndWrite(byte[] bytes, ModifiedOutput modifiedOutput) throws IOException
+  public void modifyAndWrite(byte[] bytes, OutputStream outputStream) throws IOException
   {
-    modifiedOutput.write(bytes);
+    outputStream.write(bytes);
   }
 
   @Override
-  public void responseComplete(ModifiedOutput modifiedOutput) throws IOException
+  public void responseComplete(OutputStream outputStream) throws IOException
   {}
 }

@@ -28,6 +28,8 @@ class ModifiedOutputStream extends OutputStream implements ModifiedOutput
 
   private final TByteArrayList outputBuffer = new TByteArrayList();
 
+  private OutputStreamBridge outputStreamBridge = new OutputStreamBridge();
+
   ModifiedOutputStream(HttpResponse response, ResponseContentModifier modifier, OutputStream outputStream, int minimumResponseChunkSize)
   {
     this.response = response;
@@ -55,7 +57,7 @@ class ModifiedOutputStream extends OutputStream implements ModifiedOutput
 
   public void done() throws IOException
   {
-    modifier.responseComplete(this);
+    modifier.responseComplete(outputStreamBridge);
 
     writeBuffer();
 
@@ -85,8 +87,7 @@ class ModifiedOutputStream extends OutputStream implements ModifiedOutput
     procesInput(Arrays.copyOfRange(bytes, offset, (offset + length)));
   }
 
-  @Override
-  public void write(byte[] bytes) throws IOException
+  void processOutput(byte[] bytes) throws IOException
   {
     outputBuffer.add(bytes);
     if (outputBuffer.size() >= minimumResponseChunkSize)
@@ -99,7 +100,7 @@ class ModifiedOutputStream extends OutputStream implements ModifiedOutput
   {
     if (!inputChunked)
     {
-      modifier.modifyAndWrite(bytes, this);
+      modifier.modifyAndWrite(bytes, outputStreamBridge);
     }
     else
     {
@@ -147,7 +148,7 @@ class ModifiedOutputStream extends OutputStream implements ModifiedOutput
           case READ_BYTES:
             int bytesToRead = Math.min(chunkedLineRemaining, inputBuffer.size());
 
-            modifier.modifyAndWrite(inputBuffer.toArray(0, bytesToRead), this);
+            modifier.modifyAndWrite(inputBuffer.toArray(0, bytesToRead), outputStreamBridge);
             inputBuffer.remove(0, bytesToRead);
 
             chunkedLineRemaining -= bytesToRead;
@@ -205,5 +206,26 @@ class ModifiedOutputStream extends OutputStream implements ModifiedOutput
     }
 
     return null;
+  }
+
+  class OutputStreamBridge extends OutputStream
+  {
+    @Override
+    public void write(int i) throws IOException
+    {
+      processOutput(new byte[]{(byte) i});
+    }
+
+    @Override
+    public void write(byte[] bytes) throws IOException
+    {
+      processOutput(bytes);
+    }
+
+    @Override
+    public void write(byte[] bytes, int offset, int length) throws IOException
+    {
+      processOutput(Arrays.copyOfRange(bytes, offset, (offset + length)));
+    }
   }
 }
