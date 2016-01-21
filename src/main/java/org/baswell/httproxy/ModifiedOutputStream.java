@@ -10,6 +10,8 @@ import static org.baswell.httproxy.Constants.*;
 
 class ModifiedOutputStream extends OutputStream implements ModifiedOutput
 {
+  private final HttpRequest request;
+
   private final HttpResponse response;
 
   private final ResponseContentModifier modifier;
@@ -30,8 +32,9 @@ class ModifiedOutputStream extends OutputStream implements ModifiedOutput
 
   private OutputStreamBridge outputStreamBridge = new OutputStreamBridge();
 
-  ModifiedOutputStream(HttpResponse response, ResponseContentModifier modifier, OutputStream outputStream, int minimumResponseChunkSize)
+  ModifiedOutputStream(HttpRequest request, HttpResponse response, ResponseContentModifier modifier, OutputStream outputStream, int minimumResponseChunkSize)
   {
+    this.request = request;
     this.response = response;
     this.modifier = modifier;
     this.outputStream = outputStream;
@@ -57,7 +60,7 @@ class ModifiedOutputStream extends OutputStream implements ModifiedOutput
 
   public void done() throws IOException
   {
-    modifier.responseComplete(outputStreamBridge);
+    modifier.responseComplete(request, response, outputStreamBridge);
 
     writeBuffer();
 
@@ -100,7 +103,7 @@ class ModifiedOutputStream extends OutputStream implements ModifiedOutput
   {
     if (!inputChunked)
     {
-      modifier.modifyAndWrite(bytes, outputStreamBridge);
+      modifier.modifyAndWrite(request, response, bytes, outputStreamBridge);
     }
     else
     {
@@ -148,7 +151,7 @@ class ModifiedOutputStream extends OutputStream implements ModifiedOutput
           case READ_BYTES:
             int bytesToRead = Math.min(chunkedLineRemaining, inputBuffer.size());
 
-            modifier.modifyAndWrite(inputBuffer.toArray(0, bytesToRead), outputStreamBridge);
+            modifier.modifyAndWrite(request, response, inputBuffer.toArray(0, bytesToRead), outputStreamBridge);
             inputBuffer.remove(0, bytesToRead);
 
             chunkedLineRemaining -= bytesToRead;

@@ -274,7 +274,7 @@ class PipedExchangeStream implements ReapedPipedExchange
   {
     proxyDirector.onResponseStart(requestPipeStream.currentRequest, responsePipeStream.currentResponse);
     ResponseContentModifier responseContentModifier = proxyDirector.getResponseModifier(requestPipeStream.currentRequest, responsePipeStream.currentResponse);
-    modifiedResponseStream = responseContentModifier != null ? new ModifiedOutputStream(responsePipeStream.currentResponse, responseContentModifier, clientOutputStream.rawOutputStream, 20) : null;
+    modifiedResponseStream = responseContentModifier != null ? new ModifiedOutputStream(requestPipeStream.currentRequest, responsePipeStream.currentResponse, responseContentModifier, clientOutputStream.rawOutputStream, 20) : null;
   }
 
   void onResponseHeaderSent()
