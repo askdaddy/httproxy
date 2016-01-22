@@ -96,40 +96,7 @@ class ModifiedOutputStream extends OutputStream
       encoderDecoder = new IdentityEncoderDecoder();
     }
 
-    String contentType = request.getHeaderValue("Content-Type");
-    if (nullEmpty(contentType))
-    {
-      charset = null;
-    }
-    else
-    {
-      int index = contentType.indexOf("charset=");
-      if (index < 0)
-      {
-        charset = null;
-      }
-      else
-      {
-        String charSetString = contentType.substring(index + "charset=".length());
-        index = charSetString.indexOf(";");
-        if (index > 0)
-        {
-          charSetString = charSetString.substring(0, index);
-        }
-
-        Charset charset;
-        try
-        {
-          charset = Charset.forName(charSetString.toUpperCase());
-        }
-        catch (Exception e)
-        {
-          log.warn("Unsupported charset: " + charSetString + " in content type: " + contentType);
-          charset = null;
-        }
-        this.charset = charset;
-      }
-    }
+    charset = contentTypeToCharset(request.getHeaderValue("Content-Type"), log);
   }
 
   /**
@@ -322,6 +289,44 @@ class ModifiedOutputStream extends OutputStream
     }
 
     return null;
+  }
+
+  static Charset contentTypeToCharset(String contentType, ProxyLogger log)
+  {
+    if (nullEmpty(contentType))
+    {
+      return null;
+    }
+    else
+    {
+      int index = contentType.indexOf("charset=");
+      if (index < 0)
+      {
+        return null;
+      }
+      else
+      {
+        String charSetString = contentType.substring(index + "charset=".length());
+        index = charSetString.indexOf(";");
+        if (index > 0)
+        {
+          charSetString = charSetString.substring(0, index);
+        }
+
+        try
+        {
+          return Charset.forName(charSetString.toUpperCase());
+        }
+        catch (Exception e)
+        {
+          if (log != null)
+          {
+            log.warn("Unsupported charset: " + charSetString + " in content type: " + contentType);
+          }
+          return null;
+        }
+      }
+    }
   }
 
   /**
