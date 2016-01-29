@@ -58,6 +58,23 @@ abstract public class HttpMessage
   /**
    *
    * @param name The header name
+   * @return True if at least one header in this message has the given name (case-insensitive). False otherwise.
+   */
+  public boolean hasHeader(String name)
+  {
+    for (HttpHeader header : headers)
+    {
+      if (header.name.equalsIgnoreCase(name))
+      {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   *
+   * @param name The header name
    * @return All headers that have the given <i>name</i>.
    */
   public List<HttpHeader> getHeaders(String name)
