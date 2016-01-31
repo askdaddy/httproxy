@@ -15,6 +15,9 @@
  */
 package org.baswell.httproxy;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * A proxied HTTP response. The response sent back to the client can be modified in {@link ProxyDirector#onResponseStart(HttpRequest, HttpResponse)}.
  */
@@ -127,6 +130,25 @@ public class HttpResponse extends HttpMessage
   public String getStatusLine()
   {
     return version + " " + statusCode + " " + reasonPhrase;
+  }
+
+  /**
+   *
+   * @return Parse and return all cookies set in this response.
+   */
+  public List<HttpCookie> getSetCookies()
+  {
+    List<HttpCookie> cookies = new ArrayList<HttpCookie>();
+    for (HttpHeader cookieHeader : getHeaders("Set-Cookie"))
+    {
+      try
+      {
+        cookies.add(new HttpCookie(cookieHeader.value));
+      }
+      catch (Exception e)
+      {}
+    }
+    return cookies;
   }
 
   /**
