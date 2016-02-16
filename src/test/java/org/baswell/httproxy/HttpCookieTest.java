@@ -5,6 +5,7 @@ import org.junit.Test;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.List;
 
 import static org.junit.Assert.*;
 
@@ -44,11 +45,5 @@ public class HttpCookieTest
     assertEquals(cookie.httpOnly, encodedCookie.httpOnly);
     assertEquals(cookie.secure, encodedCookie.secure);
     assertEquals(cookie.expiresAt, encodedCookie.expiresAt);
-  }
-
-  @Test
-  public void setCookies()
-  {
-
   }
 }
