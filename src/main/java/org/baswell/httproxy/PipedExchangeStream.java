@@ -296,6 +296,15 @@ class PipedExchangeStream implements ReapedPipedExchange
     proxyDirector.onResponseEnd(requestPipeStream.currentRequest, responsePipeStream.currentResponse);
     responsePipeStream.currentInputStream = null;
     clientOutputStream.wrappedOutputStream = null;
+
+    /*
+     * Some browsers (Firefox, Safari) will keep the connection open until the server actually closes it. Since we'd are about
+     * to go into a read wait on the client (request) if the server connection is going to shutdown anyway go ahead and close shop.
+     */
+    if ("close".equalsIgnoreCase(responsePipeStream.currentMessage.getHeaderValue("Connection")))
+    {
+      close();
+    }
   }
 
   @Override
