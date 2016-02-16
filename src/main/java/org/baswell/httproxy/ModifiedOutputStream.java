@@ -411,6 +411,8 @@ class ModifiedOutputStream extends OutputStream
 
     final Thread decoderThread;
 
+    boolean threadRunning;
+
     boolean done = false;
 
     StreamEncoderDecoder() throws IOException
@@ -507,6 +509,7 @@ class ModifiedOutputStream extends OutputStream
     @Override
     public void run()
     {
+      threadRunning = true;
       try
       {
         InputStream decodingInputStream = createDecompressingInputStream(this);
@@ -526,19 +529,24 @@ class ModifiedOutputStream extends OutputStream
       synchronized (this)
       {
         notify(); // Notify inputDone() that all bytes have been processed
+        threadRunning = false;
       }
     }
 
     public synchronized byte[] inputDone()
     {
-      done = true;
-      notify(); // Wake up decoderThread which is a sleep in read().
-      try
+      if (threadRunning)
       {
-        wait(); // decoderThread will notify us at the end of run() when all the input has been processed so we can return it here.
+        done = true;
+        notify(); // Wake up decoderThread which is a sleep in read().
+        try
+        {
+          wait(); // decoderThread will notify us at the end of run() when all the input has been processed so we can return it here.
+        }
+        catch (InterruptedException e)
+        {
+        }
       }
-      catch (InterruptedException e)
-      {}
 
       return decodedInputBuffer.toArray();
     }
