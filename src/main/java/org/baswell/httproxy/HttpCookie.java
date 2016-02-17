@@ -225,7 +225,7 @@ public class HttpCookie
 
   static List<HttpCookie> parse(String cookieHeaderValue)
   {
-    String[] values = cookieHeaderValue.split(",");
+    String[] values = cookieHeaderValue.split(";");
     List<HttpCookie> cookies = new ArrayList<HttpCookie>();
     for (String value : values)
     {
