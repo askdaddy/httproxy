@@ -171,7 +171,7 @@ abstract public class HttpMessage
   {
     for (int i = headers.size() - 1; i >= 0; i--)
     {
-      if (headers.get(i).name.equals(name))
+      if (headers.get(i).name.equalsIgnoreCase(name))
       {
         headers.remove(i);
       }

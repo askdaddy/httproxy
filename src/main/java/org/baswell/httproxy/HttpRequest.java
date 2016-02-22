@@ -16,6 +16,7 @@
 package org.baswell.httproxy;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -153,7 +154,7 @@ public class HttpRequest extends HttpMessage
     {
       try
       {
-        cookies.addAll(HttpCookie.parse(cookieHeader.value));
+        cookies.addAll(HttpCookie.decodeHeaderValue(cookieHeader.value));
       }
       catch (Exception e)
       {}
@@ -162,11 +163,23 @@ public class HttpRequest extends HttpMessage
   }
 
   /**
-   * Add a cookie to this request. Should be called from {@link ProxyDirector#onRequestStart(HttpRequest)}.
-   * @param cookie
+   * Add a cookies to this request. Should be called from {@link ProxyDirector#onRequestStart(HttpRequest)}.
+   * @param cookieToAdded
    */
-  public void addCookie(HttpCookie cookie)
+  public void addCookie(HttpCookie cookieToAdded)
   {
-    headers.add(new HttpHeader("Cookie", cookie.toString()));
+    addCookies(Arrays.asList(cookieToAdded));
+  }
+
+  /**
+   * Adds cookies to this request. Should be called from {@link ProxyDirector#onRequestStart(HttpRequest)}.
+   * @param cookiesToAdded
+   */
+  public void addCookies(List<HttpCookie> cookiesToAdded)
+  {
+    List<HttpCookie> cookies = getCookies();
+    cookies.addAll(cookiesToAdded);
+
+    setOrAddHeader("Cookie", HttpCookie.encodeHeaderValue(cookies));
   }
 }

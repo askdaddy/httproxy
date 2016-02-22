@@ -223,7 +223,7 @@ public class HttpCookie
     return encoded;
   }
 
-  static List<HttpCookie> parse(String cookieHeaderValue)
+  static List<HttpCookie> decodeHeaderValue(String cookieHeaderValue)
   {
     String[] values = cookieHeaderValue.split(";");
     List<HttpCookie> cookies = new ArrayList<HttpCookie>();
@@ -241,4 +241,20 @@ public class HttpCookie
     }
     return cookies;
   }
+
+  static String encodeHeaderValue(List<HttpCookie> cookies)
+  {
+    StringBuilder headerValue = new StringBuilder();
+    for (int i = 0; i < cookies.size(); i++)
+    {
+      HttpCookie cookie = cookies.get(i);
+      headerValue.append(cookie.name).append("=").append(cookie.value);
+      if (i < cookies.size() - 1)
+      {
+        headerValue.append("; ");
+      }
+    }
+    return headerValue.toString();
+  }
+
 }
