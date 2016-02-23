@@ -55,6 +55,12 @@ abstract public class HttpMessage
    */
   public final Map<String, Object> attachements = new HashMap<String, Object>();
 
+
+  /**
+   * The size of the body in bytes. May be null if the content of the response is not known from the header and has not been processed yet.
+   */
+  public Long bodySize;
+
   /**
    *
    * @param name The header name

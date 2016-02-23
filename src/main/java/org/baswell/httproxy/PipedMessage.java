@@ -155,7 +155,7 @@ abstract class PipedMessage
           {
             try
             {
-              contentLength = Long.parseLong(header.value);
+              currentMessage.bodySize = contentLength = Long.parseLong(header.value);
             }
             catch (NumberFormatException e)
             {
@@ -170,6 +170,7 @@ abstract class PipedMessage
 
         if ((processChunkedState != null))
         {
+          currentMessage.bodySize = 0l;
           readState = ReadState.READING_CHUNKED_CONTENT;
         }
         else if (contentLength != null && contentLength > 0)
@@ -179,6 +180,7 @@ abstract class PipedMessage
         }
         else
         {
+          currentMessage.bodySize = 0l;
           readState = ReadState.DONE;
         }
         break;
@@ -211,7 +213,7 @@ abstract class PipedMessage
             line = new String(bytes);
             try
             {
-              chunkedNextBytesTotal = Integer.parseInt(line.trim(), 16);
+              currentMessage.bodySize += chunkedNextBytesTotal = Integer.parseInt(line.trim(), 16);
               if (chunkedNextBytesTotal == 0)
               {
                 processChunkedState = ReadChunkedInputState.READ_LAST_LINE;
