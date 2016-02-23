@@ -17,6 +17,11 @@ package org.baswell.httproxy;
 
 import gnu.trove.list.array.TByteArrayList;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -190,6 +195,29 @@ abstract public class HttpMessage
     return new String(toBytes());
   }
 
+  /**
+   * Encode this entire message as a byte array.
+   *
+   * @return The encoded bytes.
+   * @see #decode(byte[])
+   */
+  public byte[] encode()
+  {
+    try
+    {
+      ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+      ObjectOutputStream out = new ObjectOutputStream(bytes);
+      out.writeObject(this);
+      out.close();
+
+      return bytes.toByteArray();
+    }
+    catch (IOException e)
+    {
+      throw new RuntimeException(e);
+    }
+  }
+
   byte[] toBytes()
   {
     TByteArrayList bytes = new TByteArrayList((headers.size() + 1) * AVERAGE_HEADER_LENGTH);
@@ -222,6 +250,29 @@ abstract public class HttpMessage
     else
     {
       return null;
+    }
+  }
+
+  /**
+   * Decode the given bytes which must be a byte array created from {@link #encode()}.
+   *
+   * @param bytes The encoded message bytes.
+   * @return The HttpMessage that was previously encoded from the given bytes.
+   */
+  public static HttpMessage decode(byte[] bytes)
+  {
+    try
+    {
+      ObjectInputStream objectInputStream = new ObjectInputStream(new ByteArrayInputStream(bytes));
+      return (HttpMessage)objectInputStream.readObject();
+    }
+    catch (IOException e)
+    {
+      throw new RuntimeException(e);
+    }
+    catch (ClassNotFoundException e)
+    {
+      throw new RuntimeException(e);
     }
   }
 }
