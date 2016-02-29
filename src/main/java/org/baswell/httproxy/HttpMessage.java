@@ -62,7 +62,7 @@ abstract public class HttpMessage
 
 
   /**
-   * The size of the body in bytes. May be null if the content of the response is not known from the header and has not been processed yet.
+   * The size of the body in bytes. May be null if the content is not known from the header and has not been processed yet.
    */
   public Long bodySize;
 
@@ -81,6 +81,11 @@ abstract public class HttpMessage
       }
     }
     return false;
+  }
+
+  public boolean hasContent()
+  {
+    return hasHeader("Content-Length") || hasHeader("Transfer-Encoding");
   }
 
   /**

@@ -263,8 +263,25 @@ class PipedExchangeStream implements ReapedPipedExchange
     }
   }
 
+  void onRequestHeaderWritten() throws IOException
+  {
+    if (requestPipeStream.currentRequest.hasContent())
+    {
+      RequestContentModifier contentModifier = proxyDirector.getRequestModifier(requestPipeStream.currentRequest);
+      if (contentModifier != null)
+      {
+        requestPipeStream.currentOutputStream = new ModifiedOutputStream(requestPipeStream.currentRequest, contentModifier, requestPipeStream.currentOutputStream, 20, log);
+      }
+    }
+  }
+
   void onRequestDone() throws IOException
   {
+    if (requestPipeStream.currentOutputStream instanceof ModifiedOutputStream)
+    {
+      ((ModifiedOutputStream)requestPipeStream.currentOutputStream).onContentComplete();
+    }
+
     proxyDirector.onRequestEnd(requestPipeStream.currentRequest, currentConnectionParameters);
     requestPipeStream.currentOutputStream.flush();
     requestPipeStream.currentOutputStream = null;
@@ -273,8 +290,15 @@ class PipedExchangeStream implements ReapedPipedExchange
   void onResponse() throws EndProxiedRequestException, IOException
   {
     proxyDirector.onResponseStart(requestPipeStream.currentRequest, responsePipeStream.currentResponse);
-    ResponseContentModifier responseContentModifier = proxyDirector.getResponseModifier(requestPipeStream.currentRequest, responsePipeStream.currentResponse);
-    modifiedResponseStream = responseContentModifier != null ? new ModifiedOutputStream(requestPipeStream.currentRequest, responsePipeStream.currentResponse, responseContentModifier, clientOutputStream.rawOutputStream, 20, log) : null;
+    if (responsePipeStream.currentResponse.hasContent())
+    {
+      ResponseContentModifier responseContentModifier = proxyDirector.getResponseModifier(requestPipeStream.currentRequest, responsePipeStream.currentResponse);
+      modifiedResponseStream = responseContentModifier != null ? new ModifiedOutputStream(requestPipeStream.currentRequest, responsePipeStream.currentResponse, responseContentModifier, clientOutputStream.rawOutputStream, 20, log) : null;
+    }
+    else
+    {
+      modifiedResponseStream = null;
+    }
   }
 
   void onResponseHeaderSent()

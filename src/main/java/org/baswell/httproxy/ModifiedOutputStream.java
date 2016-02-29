@@ -29,11 +29,15 @@ class ModifiedOutputStream extends OutputStream
 
   private final Charset charset;
 
-  private final ResponseContentModifier modifier;
+  private final boolean requestModifier;
 
-  private final OutputStream clientOutputStream;
+  private final RequestContentModifier requestContentModifier;
 
-  private final int minimumResponseChunkSize;
+  private final ResponseContentModifier responseContentModifier;
+
+  private final OutputStream outputStream;
+
+  private final int minimumChunkSize;
 
   private final ProxyLogger log;
 
@@ -51,16 +55,31 @@ class ModifiedOutputStream extends OutputStream
 
   private final ContentEncoderDecoder encoderDecoder;
 
-  ModifiedOutputStream(HttpRequest request, HttpResponse response, ResponseContentModifier modifier, OutputStream clientOutputStream, int minimumResponseChunkSize, ProxyLogger log) throws IOException
+  ModifiedOutputStream(HttpRequest request, RequestContentModifier requestContentModifier, OutputStream outputStream, int minimumChunkSize, ProxyLogger log) throws IOException
+  {
+    this(request, null, requestContentModifier, null, outputStream, minimumChunkSize, log);
+  }
+
+  ModifiedOutputStream(HttpRequest request, HttpResponse response, ResponseContentModifier responseContentModifier, OutputStream outputStream, int minimumChunkSize, ProxyLogger log) throws IOException
+  {
+    this(request, response, null, responseContentModifier, outputStream, minimumChunkSize, log);
+  }
+
+  private ModifiedOutputStream(HttpRequest request, HttpResponse response, RequestContentModifier requestContentModifier, ResponseContentModifier responseContentModifier, OutputStream outputStream, int minimumChunkSize, ProxyLogger log) throws IOException
   {
     this.request = request;
     this.response = response;
-    this.modifier = modifier;
-    this.clientOutputStream = clientOutputStream;
-    this.minimumResponseChunkSize = minimumResponseChunkSize;
+    this.requestContentModifier = requestContentModifier;
+    this.responseContentModifier = responseContentModifier;
+    this.outputStream = outputStream;
+    this.minimumChunkSize = minimumChunkSize;
     this.log = log;
 
-    if ("chunked".equalsIgnoreCase(response.getHeaderValue("Transfer-Encoding")))
+    requestModifier = requestContentModifier != null;
+
+    HttpMessage contentMessage = response == null ? request : response;
+
+    if ("chunked".equalsIgnoreCase(contentMessage.getHeaderValue("Transfer-Encoding")))
     {
       inputChunked = true;
       inputBuffer = new TByteArrayList();
@@ -73,11 +92,11 @@ class ModifiedOutputStream extends OutputStream
       /*
        * Since the response is being modified we don't know the final length. Will have to send this back chunked.
        */
-      response.removeHeader("Content-Length");
-      response.setOrAddHeader("Transfer-Encoding", "chunked");
+      contentMessage.removeHeader("Content-Length");
+      contentMessage.setOrAddHeader("Transfer-Encoding", "chunked");
     }
 
-    String contentEncoding = response.getHeaderValue("Content-Encoding");
+    String contentEncoding = contentMessage.getHeaderValue("Content-Encoding");
     if (contentEncoding == null || contentEncoding.equals("identity"))
     {
       encoderDecoder = new IdentityEncoderDecoder();
@@ -96,8 +115,9 @@ class ModifiedOutputStream extends OutputStream
       encoderDecoder = new IdentityEncoderDecoder();
     }
 
-    charset = contentTypeToCharset(request.getHeaderValue("Content-Type"), log);
+    charset = contentTypeToCharset(contentMessage.getHeaderValue("Content-Type"), log);
   }
+
 
   /**
    * Called when all bytes from proxied server have been received.
@@ -107,10 +127,24 @@ class ModifiedOutputStream extends OutputStream
     byte[] bytes = encoderDecoder.inputDone();
     if (bytes != null && bytes.length > 0)
     {
-      modifier.modifyAndWrite(request, response, bytes, charset, outputStreamBridge);
+      if (requestModifier)
+      {
+        requestContentModifier.modifyAndWrite(request, bytes, charset, outputStreamBridge);
+      }
+      else
+      {
+        responseContentModifier.modifyAndWrite(request, response, bytes, charset, outputStreamBridge);
+      }
     }
 
-    modifier.responseComplete(request, response, charset, outputStreamBridge);
+    if (requestModifier)
+    {
+      requestContentModifier.requestComplete(request, charset, outputStreamBridge);
+    }
+    else
+    {
+      responseContentModifier.responseComplete(request, response, charset, outputStreamBridge);
+    }
 
     bytes = encoderDecoder.finishOutput();
     if (bytes != null && bytes.length > 0)
@@ -121,11 +155,11 @@ class ModifiedOutputStream extends OutputStream
     writeChunk();
 
     // Chunked encoding complete footer
-    clientOutputStream.write("0".getBytes());
-    clientOutputStream.write(Constants.CR);
-    clientOutputStream.write(Constants.LF);
-    clientOutputStream.write(Constants.CR);
-    clientOutputStream.write(Constants.LF);
+    outputStream.write("0".getBytes());
+    outputStream.write(Constants.CR);
+    outputStream.write(Constants.LF);
+    outputStream.write(Constants.CR);
+    outputStream.write(Constants.LF);
   }
 
   @Override
@@ -156,7 +190,14 @@ class ModifiedOutputStream extends OutputStream
       bytes = encoderDecoder.decode(bytes);
       if (bytes != null && bytes.length > 0)
       {
-        modifier.modifyAndWrite(request, response, bytes, charset, outputStreamBridge);
+        if (requestModifier)
+        {
+          requestContentModifier.modifyAndWrite(request, bytes, charset, outputStreamBridge);
+        }
+        else
+        {
+          responseContentModifier.modifyAndWrite(request, response, bytes, charset, outputStreamBridge);
+        }
       }
     }
     else
@@ -209,7 +250,14 @@ class ModifiedOutputStream extends OutputStream
             inputBuffer.remove(0, bytesToRead);
             if (uncompressedBytes != null && uncompressedBytes.length > 0)
             {
-              modifier.modifyAndWrite(request, response, uncompressedBytes, charset, outputStreamBridge);
+              if (requestModifier)
+              {
+                requestContentModifier.modifyAndWrite(request, uncompressedBytes, charset, outputStreamBridge);
+              }
+              else
+              {
+                responseContentModifier.modifyAndWrite(request, response, uncompressedBytes, charset, outputStreamBridge);
+              }
             }
 
             chunkedLineRemaining -= bytesToRead;
@@ -248,7 +296,7 @@ class ModifiedOutputStream extends OutputStream
     if (bytes != null && bytes.length > 0)
     {
       outputBuffer.add(bytes);
-      if (outputBuffer.size() >= minimumResponseChunkSize)
+      if (outputBuffer.size() >= minimumChunkSize)
       {
         writeChunk();
       }
@@ -262,12 +310,12 @@ class ModifiedOutputStream extends OutputStream
   {
     if (!outputBuffer.isEmpty())
     {
-      clientOutputStream.write(Integer.toString(outputBuffer.size(), 16).getBytes());
-      clientOutputStream.write(Constants.CR);
-      clientOutputStream.write(Constants.LF);
-      clientOutputStream.write(outputBuffer.toArray());
-      clientOutputStream.write(Constants.CR);
-      clientOutputStream.write(Constants.LF);
+      outputStream.write(Integer.toString(outputBuffer.size(), 16).getBytes());
+      outputStream.write(Constants.CR);
+      outputStream.write(Constants.LF);
+      outputStream.write(outputBuffer.toArray());
+      outputStream.write(Constants.CR);
+      outputStream.write(Constants.LF);
 
       outputBuffer.clear();
     }

@@ -16,8 +16,6 @@
 package org.baswell.httproxy;
 
 import javax.net.ssl.SSLContext;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.util.concurrent.ExecutorService;
 
 /**
@@ -75,8 +73,14 @@ public class SimpleIODirector extends SimpleProxyDirector implements IOProxyDire
   }
 
   @Override
+  public RequestContentModifier getRequestModifier(HttpRequest httpRequest)
+  {
+    return new PassThroughRequestContentModifier();
+  }
+
+  @Override
   public ResponseContentModifier getResponseModifier(HttpRequest httpRequest, HttpResponse httpResponse)
   {
-    return new PassThroughModifier();
+    return new PassThroughResponseContentModifier();
   }
 }

@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 
-class PassThroughModifier implements ResponseContentModifier
+class PassThroughResponseContentModifier implements ResponseContentModifier
 {
   @Override
   public void modifyAndWrite(HttpRequest httpRequest, HttpResponse httpResponse, byte[] bytes, Charset charset, OutputStream outputStream) throws IOException

@@ -55,11 +55,20 @@ public interface IOProxyDirector extends ProxyDirector
   int getKeepAliveSleepSeconds();
 
   /**
-   * After the HTTP response header is sent back to the client the content response sent back can be modified here by a. <code>null</code> can be returned here to use the raw client output stream.
+   * After the HTTP request header is sent from the client the content of the request (if present) can be modified here. <code>null</code> can be returned here to send to the
+   * proxied server exactly what the client sent in the content of the request.
+   *
+   * @param httpRequest The HTTP request from the client.
+   * @return The modifier of this request's content or <code>null</code> to use the raw client input stream.
+   */
+  RequestContentModifier getRequestModifier(HttpRequest httpRequest);
+
+  /**
+   * After the HTTP response header is sent back to the client the content response sent back can be modified here. <code>null</code> can be returned here to use the raw client output stream.
    *
    * @param httpRequest The HTTP request that produced the given response.
    * @param httpResponse The HTTP response.
-   * @return The wrapped content output stream or <code>null</code> to use the raw client output stream.
+   * @return The modifier of the response's content or <code>null</code> to use the raw client output stream.
    */
   ResponseContentModifier getResponseModifier(HttpRequest httpRequest, HttpResponse httpResponse);
 }
