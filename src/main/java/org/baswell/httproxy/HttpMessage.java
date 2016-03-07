@@ -59,7 +59,7 @@ abstract public class HttpMessage implements Serializable
   /**
    * Attachments not used by HttProxy.
    */
-  public final Map<String, Object> attachements = new HashMap<String, Object>();
+  public final transient Map<String, Object> attachements = new HashMap<String, Object>();
 
 
   /**

@@ -46,12 +46,12 @@ public class ConnectionParameters implements Serializable
   /**
    * if this connection is over SSL, the SSLContext used for the SSL exchanges.
    */
-  public final SSLContext sslContext;
+  public final transient SSLContext sslContext;
 
   /**
    * Attachments not used by HttProxy.
    */
-  public final Map<String, Object> attachements = new HashMap<String, Object>();
+  public final transient Map<String, Object> attachements = new HashMap<String, Object>();
 
   /**
    *
