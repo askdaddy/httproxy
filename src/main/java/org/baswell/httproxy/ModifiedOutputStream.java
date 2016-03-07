@@ -180,6 +180,12 @@ class ModifiedOutputStream extends OutputStream
     onRawInput(Arrays.copyOfRange(bytes, offset, (offset + length)));
   }
 
+  @Override
+  public void flush() throws IOException
+  {
+    outputStream.flush();
+  }
+
   /**
    * Called from {@link PipedResponseStream} through InputStream API. These are the raw bytes (chunked encoded, and compressed - possible).
    */
