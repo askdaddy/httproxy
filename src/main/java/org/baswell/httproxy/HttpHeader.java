@@ -16,6 +16,9 @@
 package org.baswell.httproxy;
 
 import gnu.trove.list.array.TByteArrayList;
+
+import java.io.Serializable;
+
 import static org.baswell.httproxy.Constants.*;
 
 /**
@@ -24,7 +27,7 @@ import static org.baswell.httproxy.Constants.*;
  * @see HttpMessage#headers
  * @see HttpMessage#getHeaders(String)
  */
-public class HttpHeader
+public class HttpHeader implements Serializable
 {
   public String name;
 

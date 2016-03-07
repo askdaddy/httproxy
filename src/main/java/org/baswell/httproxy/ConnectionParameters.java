@@ -16,6 +16,7 @@
 package org.baswell.httproxy;
 
 import javax.net.ssl.SSLContext;
+import java.io.Serializable;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
@@ -25,7 +26,7 @@ import java.util.Map;
  *
  * @see ProxyDirector#onRequestStart(HttpRequest)
  */
-public class ConnectionParameters
+public class ConnectionParameters implements Serializable
 {
   /**
    * Is this connection over SSL.

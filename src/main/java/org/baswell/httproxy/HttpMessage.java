@@ -22,6 +22,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -33,7 +34,7 @@ import static org.baswell.httproxy.Constants.*;
 /**
  * Base class for {@link HttpRequest} and {@link HttpResponse}.
  */
-abstract public class HttpMessage
+abstract public class HttpMessage implements Serializable
 {
   /**
    * @return The status line of this message (ex. <i>GET /path/to/file/index.html HTTP/1.0</i>, <i>HTTP/1.0 200 OK</i>).
@@ -221,6 +222,12 @@ abstract public class HttpMessage
     {
       throw new RuntimeException(e);
     }
+  }
+
+  @Override
+  public boolean equals(Object object)
+  {
+    return object != null && object.getClass() == getClass() && object.toString().equals(toString());
   }
 
   byte[] toBytes()
