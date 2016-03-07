@@ -465,7 +465,7 @@ class ModifiedOutputStream extends OutputStream
 
     final Thread decoderThread;
 
-    boolean threadRunning;
+    volatile boolean threadRunning;
 
     boolean done = false;
 
