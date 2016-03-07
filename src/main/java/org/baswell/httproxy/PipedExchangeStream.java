@@ -43,6 +43,8 @@ class PipedExchangeStream implements ReapedPipedExchange
 
   private final ProxyLogger log;
 
+  private ModifiedOutputStream requestModifiedOutputStream;
+
   Integer lastKeepAliveTimeoutSeconds;
 
   long lastExchangeAt;
@@ -254,6 +256,16 @@ class PipedExchangeStream implements ReapedPipedExchange
         responsePipeStream.overSSL = currentConnectionParameters.ssl;
 
         connectingServerSocket = false;
+
+        if (requestPipeStream.currentRequest.hasContent())
+        {
+          RequestContentModifier contentModifier = proxyDirector.getRequestModifier(requestPipeStream.currentRequest);
+          if (contentModifier != null)
+          {
+            requestModifiedOutputStream = new ModifiedOutputStream(requestPipeStream.currentRequest, contentModifier, requestPipeStream.currentOutputStream, 20, log);
+          }
+        }
+
       }
       catch (IOException e)
       {
@@ -265,26 +277,23 @@ class PipedExchangeStream implements ReapedPipedExchange
 
   void onRequestHeaderWritten() throws IOException
   {
-    if (requestPipeStream.currentRequest.hasContent())
+    if (requestModifiedOutputStream != null)
     {
-      RequestContentModifier contentModifier = proxyDirector.getRequestModifier(requestPipeStream.currentRequest);
-      if (contentModifier != null)
-      {
-        requestPipeStream.currentOutputStream = new ModifiedOutputStream(requestPipeStream.currentRequest, contentModifier, requestPipeStream.currentOutputStream, 20, log);
-      }
+      requestPipeStream.currentOutputStream = requestModifiedOutputStream;
     }
   }
 
   void onRequestDone() throws IOException
   {
-    if (requestPipeStream.currentOutputStream instanceof ModifiedOutputStream)
+    if (requestModifiedOutputStream != null)
     {
-      ((ModifiedOutputStream)requestPipeStream.currentOutputStream).onContentComplete();
+      requestModifiedOutputStream.onContentComplete();
     }
 
     proxyDirector.onRequestEnd(requestPipeStream.currentRequest, currentConnectionParameters);
     requestPipeStream.currentOutputStream.flush();
     requestPipeStream.currentOutputStream = null;
+    requestModifiedOutputStream = null;
   }
 
   void onResponse() throws EndProxiedRequestException, IOException
