@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.channels.NotYetBoundException;
-import java.util.concurrent.ExecutorService;
 
 /**
  * Accepts and dispatches incoming requests on the given ServerSocket.
@@ -60,7 +59,7 @@ public class ServerSocketAcceptLoop
         Socket socket = serverSocket.accept();
         if (socket != null)
         {
-          Integer socketTimeout = proxyDirector.getSocketReadTimeoutMilliseconds();
+          Integer socketTimeout = proxyDirector.getServerSocketReadTimeout();
           if (socketTimeout != null && socketTimeout > 0)
           {
             socket.setSoTimeout(socketTimeout);

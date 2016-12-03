@@ -107,7 +107,7 @@ abstract public class SimpleProxyDirector implements ProxyDirector
   }
 
   @Override
-  public void onPrematureResponseClosed(HttpRequest httpRequest, HttpResponse response, IOException e)
+  public void onPrematureResponseClosed(HttpRequest httpRequest, ConnectionParameters connectionParameters, IOException e)
   {
     System.err.println("Response premature closed: " + e.getMessage());
     e.printStackTrace();

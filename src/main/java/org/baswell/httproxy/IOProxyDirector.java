@@ -29,7 +29,9 @@ public interface IOProxyDirector extends ProxyDirector
    *
    * @return The socket read timeout in milliseconds or <code>null</code> if not timeout is desired.
    */
-  Integer getSocketReadTimeoutMilliseconds();
+  Integer getServerSocketReadTimeout();
+
+  Integer getSocketReadTimeout(HttpRequest request);
 
   /**
    *

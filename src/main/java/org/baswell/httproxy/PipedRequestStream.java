@@ -65,7 +65,7 @@ class PipedRequestStream extends PipedRequest
   @Override
   void onRequest(HttpRequest request) throws EndProxiedRequestException, IOException
   {
-    exchangeStream.onRequest();
+    exchangeStream.onRequest(request);
     currentOutputStream.write(currentRequest.toBytes());
     exchangeStream.onRequestHeaderWritten();
   }

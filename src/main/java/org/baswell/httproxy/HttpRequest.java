@@ -54,6 +54,8 @@ public class HttpRequest extends HttpMessage
    */
   public String version;
 
+  private String cachedHost;
+
   /**
    *
    * @param clientIp The client IP address this request came from.
@@ -131,7 +133,11 @@ public class HttpRequest extends HttpMessage
    */
   public String getHost()
   {
-    return getHeaderValue("Host");
+    if (cachedHost == null)
+    {
+      cachedHost = getHeaderValue("Host");
+    }
+    return cachedHost;
   }
 
   /**

@@ -57,7 +57,7 @@ abstract class PipedRequest extends PipedMessage
 
   void setClientIp(Socket socket)
   {
-    clientIp = ((InetSocketAddress)socket.getRemoteSocketAddress()).getAddress().getHostAddress();
+    clientIp = ((InetSocketAddress)socket.getRemoteSocketAddress()).getHostString();
   }
 
   @Override

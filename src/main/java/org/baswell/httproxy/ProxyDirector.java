@@ -103,10 +103,10 @@ public interface ProxyDirector
    * Called when the server connection was closed before a response was retrieved.
    *
    * @param httpRequest The HTTP request that produced the given response.
-   * @param httpResponse The HTTP response. May be null.
+   * @param connectionParameters The connection parameters to the backend server that shutdown the request.
    * @param e The IO exception that signaled the close.
    */
-  void onPrematureResponseClosed(HttpRequest httpRequest, HttpResponse httpResponse, IOException e);
+  void onPrematureResponseClosed(HttpRequest httpRequest, ConnectionParameters connectionParameters, IOException e);
 
   /**
    * The logger used by the HttProxy runtime.

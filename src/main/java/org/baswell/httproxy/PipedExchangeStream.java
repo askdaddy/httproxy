@@ -109,7 +109,7 @@ class PipedExchangeStream implements ReapedPipedExchange
             }
             else
             {
-              proxyDirector.onPrematureResponseClosed(requestPipeStream.currentRequest, responsePipeStream.currentResponse, proxiedIOException.e);
+              proxyDirector.onPrematureResponseClosed(requestPipeStream.currentRequest, currentConnectionParameters, proxiedIOException.e);
             }
           }
         }
@@ -187,7 +187,7 @@ class PipedExchangeStream implements ReapedPipedExchange
             {
               if (proxiedIOException.reading)
               {
-                proxyDirector.onPrematureResponseClosed(requestPipeStream.currentRequest, responsePipeStream.currentResponse, proxiedIOException.e);
+                proxyDirector.onPrematureResponseClosed(requestPipeStream.currentRequest, currentConnectionParameters, proxiedIOException.e);
               }
               else
               {
@@ -229,7 +229,7 @@ class PipedExchangeStream implements ReapedPipedExchange
     }
   }
 
-  void onRequest() throws EndProxiedRequestException, IOException
+  void onRequest(HttpRequest request) throws EndProxiedRequestException, IOException
   {
     currentConnectionParameters = proxyDirector.onRequestStart(requestPipeStream.currentRequest);
     if (currentConnectionParameters == null)
@@ -243,7 +243,7 @@ class PipedExchangeStream implements ReapedPipedExchange
       {
         Socket serverSocket = socketMultiplexer.getConnectionFor(currentConnectionParameters);
         serverSocket.setKeepAlive(true); // Use keep alives so we know when the far end has shutdown the socket.
-        Integer socketTimeout = proxyDirector.getSocketReadTimeoutMilliseconds();
+        Integer socketTimeout = proxyDirector.getSocketReadTimeout(request);
         if (socketTimeout != null && socketTimeout > 0)
         {
           serverSocket.setSoTimeout(socketTimeout);

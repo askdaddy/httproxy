@@ -19,8 +19,10 @@ import javax.net.ssl.SSLEngine;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketAddress;
+import java.net.SocketOption;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
 /**
@@ -169,6 +171,48 @@ class SSLSocketChannel extends SocketChannel implements WrappedSocketChannel
   }
 
   @Override
+  public SocketChannel bind(SocketAddress local) throws IOException
+  {
+    return null;
+  }
+
+  @Override
+  public SocketAddress getLocalAddress() throws IOException
+  {
+    return null;
+  }
+
+  @Override
+  public <T> SocketChannel setOption(SocketOption<T> name, T value) throws IOException
+  {
+    return null;
+  }
+
+  @Override
+  public <T> T getOption(SocketOption<T> name) throws IOException
+  {
+    return null;
+  }
+
+  @Override
+  public Set<SocketOption<?>> supportedOptions()
+  {
+    return null;
+  }
+
+  @Override
+  public SocketChannel shutdownInput() throws IOException
+  {
+    return null;
+  }
+
+  @Override
+  public SocketChannel shutdownOutput() throws IOException
+  {
+    return null;
+  }
+
+  @Override
   public Socket socket ()
   {
     return socketChannel.socket();
@@ -196,6 +240,12 @@ class SSLSocketChannel extends SocketChannel implements WrappedSocketChannel
   public boolean finishConnect ()throws IOException
   {
     return socketChannel.finishConnect();
+  }
+
+  @Override
+  public SocketAddress getRemoteAddress() throws IOException
+  {
+    return null;
   }
 
   @Override
