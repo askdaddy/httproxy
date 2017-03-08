@@ -140,6 +140,12 @@ public class HttpRequest extends HttpMessage
     return cachedHost;
   }
 
+  public void setHost(String host)
+  {
+    setOrAddHeader("Host", host);
+    cachedHost = host;
+  }
+
   /**
    *
    * @return The value of the <i>User-Agent</i> header or <code>null</code> if not User-Agent header is present.
